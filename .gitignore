@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# CAD outputs are regenerated from code
+cad/out/
+
+# PlatformIO
+firmware/.pio/
+
+# KiCad backups
+*-backups/
+*.kicad_prl
+fp-info-cache
+
+# FreeCAD backups
+*.FCBak
+*.FCStd1
+
+# macOS
+.DS_Store

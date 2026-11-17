@@ -1,0 +1,8 @@
+[project]
+name = "lasertrack-cad"
+version = "0.1.0"
+description = "Parametric CAD (build123d) for the LaserTrack set-top box and its NFC cartridges"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "build123d",
+]
