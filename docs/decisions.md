@@ -35,7 +35,26 @@ Newest at the bottom. Each entry: what was decided, and why.
   `FIT_CLEARANCE` in `cad/params.py` is sufficient. A tolerance gauge model
   exists and can be printed if a fit turns out to matter.
 
+## 2026-11-16 — Product direction
+
+Full requirements are in `product.md`.
+
+- **LaserTrack combines scheduled TV channels (FieldStation42) with
+  cartridge-triggered playback (240-MP).** Kyle wants both behaviours in one
+  device.
+- **The cartridge is the centrepiece.** Its look and feel take priority.
+- **Cartridges fit a standard cassette case, with a printed J-card.** Two
+  screwed halves, visible hex screws on top, NFC tag inside.
+- **Parts must be portable between a set-top box and an all-in-one TV.** The
+  cartridge receptacle is designed as a standalone module for that reason.
+- **V1 uses buttons on the box; the remote comes later.**
+- **Navigation stays simple**, following 240-MP.
+- **Print material is matte PLA.**
+- **Leaning towards reading the NAS share directly and skipping Plex.** Not
+  final.
+
 ## Open questions
 
-- What the box does, which board drives it, and which NFC reader it uses.
-- Cartridge size and how it is retained in the slot.
+See the **Open** items in `product.md`. The biggest are how the two reference
+projects are combined, the main board, and the cartridge's internal layout
+within a cassette's 12 mm thickness.

@@ -5,7 +5,11 @@ The box and the cartridges are 3D printed; the electronics are off-the-shelf
 dev boards (Arduino / ESP32 / Raspberry Pi) wired to breakout boards. No custom
 PCBs for now.
 
-The product details are not designed yet. Do not invent requirements; ask.
+It combines scheduled TV channels (like FieldStation42) with cartridges that
+play a specific movie, show or playlist (like 240-MP's NFC cards). The
+cartridge is the centrepiece and must fit a cassette case. Requirements and
+open questions are in `docs/product.md`; read it before design work. Do not
+invent requirements; ask.
 
 ## Layout
 
@@ -14,7 +18,7 @@ The product details are not designed yet. Do not invent requirements; ask.
 | `cad/` | build123d (Python) models. `params.py` holds every shared dimension. |
 | `firmware/` | PlatformIO project (not created yet). |
 | `electronics/` | Pin-map tables in Markdown; KiCad only if a circuit outgrows a table. |
-| `docs/` | `decisions.md` is the log of what was decided and why. |
+| `docs/` | `product.md` is the product brief; `decisions.md` logs what was decided and why. |
 | `vendor/` | Downloaded STEP models and datasheets for bought parts. |
 
 ## CAD
