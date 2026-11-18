@@ -29,6 +29,10 @@ invent requirements; ask.
 - Mating parts use `FIT_CLEARANCE` from `params.py` (per side).
 - Each model script exports STEP to `cad/out/` and prints its bounding box and
   volume. Check those numbers against the intent before saying a model is done.
+- **QC before hand-off, every time:** delete `cad/out/renders/*.png`, rebuild,
+  render every view of every part (plus section close-ups for joints), confirm
+  the render files are fresh, and look at each one. Never hand over a model
+  after looking at only the parts you changed.
 - Kyle views models by opening the STEP in FreeCAD and slices in Bambu Studio.
 - Printer: Bambu Lab H2D (dual nozzle, 0.4 mm). No separate printer-facts file.
 

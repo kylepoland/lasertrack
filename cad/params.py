@@ -20,6 +20,12 @@ GAUGE_WALL = 6.0      # material between slots and around the edge
 GAUGE_LABEL_SIZE = 4.0
 GAUGE_LABEL_DEPTH = 0.6
 
+# --- Print geometry (H2D, 0.4 mm nozzle) -----------------------------------
+# Walls are whole multiples of the extrusion line width so the slicer lays
+# full lines with no thin gap-fill; skins are whole multiples of layer height.
+LINE_WIDTH = 0.42           # Bambu Studio default for a 0.4 mm nozzle
+LAYER_HEIGHT = 0.2
+
 # --- Chosen fit -------------------------------------------------------------
 FIT_CLEARANCE = 0.20  # per side; default for PLA on the H2D, refine with the gauge if a fit matters
 
@@ -38,7 +44,7 @@ CART_LENGTH = CASE_INNER_LENGTH - 2 * CASE_CLEARANCE_EDGE          # 101.0
 CART_HEIGHT = CASE_INNER_HEIGHT - 2 * CASE_CLEARANCE_EDGE          # 62.0
 CART_THICKNESS = (CASE_INNER_DEPTH - J_CARD_ALLOWANCE
                   - 2 * CASE_CLEARANCE_FACE)                       # 12.5
-CART_TOP_CHAMFER = 7.0      # bevelled top corners mark which way is up
+CART_TOP_CHAMFER = 9.0      # bevelled top corners mark which way is up
 CART_BOTTOM_RADIUS = 2.5    # bottom corners, in the outline
 CART_EDGE_CHAMFER = 0.8     # front/back perimeter; chamfer not fillet so the
                             # edge on the build plate prints without overhang
@@ -48,30 +54,63 @@ CART_INSERT_DEPTH = 22.0    # provisional: how far the long edge sits in the slo
 CART_FRONT_HALF = 5.0       # front half thickness; back half is the rest
 
 # Label recess on the front face; sticker is cut to fit inside it.
-LABEL_MARGIN = 4.0          # frame width between outline and recess
+# Sides sit LABEL_MARGIN in from the outline; top and bottom edges stop
+# LABEL_SCREW_CLEARANCE short of the counterbores, leaving a band at the top
+# (brand) and a bar at the bottom (cassette-style text). Top corners are
+# bevelled parallel to the outline's bevel.
+LABEL_MARGIN = 4.0          # side frame width between outline and recess
 LABEL_DEPTH = 0.4
 LABEL_SCREW_CLEARANCE = 1.5 # gap between counterbore and recess edge
+LABEL_CORNER_RADIUS = 1.0   # softens sticker corners so they don't lift
 STICKER_GAP = 0.3           # sticker is this much smaller than the recess, per side
+
+# Engraved text on the front face (centred on the screw lines).
+ENGRAVE_DEPTH = 0.6
+TEXT_FONT = "Arial"
+BRAND_TEXT = "LASERTRACK"
+BRAND_TEXT_SIZE = 6.5
+BAR_TEXT = "HI-FI  \u00b7  120 MIN"
+BAR_TEXT_SIZE = 3.5
 
 # Grip ribs: grooves on the left and right ends.
 RIB_COUNT = 4
 RIB_WIDTH = 1.6
-RIB_DEPTH = 1.2
+RIB_DEPTH = 0.8           # leaves WALL - 0.8 = 1.30 mm (3 lines) behind each groove
 RIB_PITCH = 4.0
 RIB_CENTER_Y = 8.0          # above the slot line, so they stay visible
 
-# Back-half pocket for the NFC tag and weights.
-POCKET_WALL = 3.0
-POCKET_DEPTH = 4.0
-POCKET_BOSS_RADIUS = 4.5    # material kept around each insert
+# Shell construction.
+WALL = 5 * LINE_WIDTH       # 2.10 outer side walls: 2 loops per side + 1 centre line
+SKIN_FRONT = 8 * LAYER_HEIGHT   # 1.6 front face
+SKIN_BACK = 8 * LAYER_HEIGHT    # 1.6 back face
 
-# --- Screws: M3 x 6 socket head cap screws into heat-set inserts ------------
-SCREW_INSET = 7.0           # from the side and top/bottom edges
+# Alignment lip: the back wall's inner half stands up as a lip; the front
+# wall's inner half is cut away (rebate) so the lip slides in behind a thin
+# outer skirt. Lip and rebate stop around the screw bosses and the ribs.
+SKIRT = 3 * LINE_WIDTH      # 1.26 outer skin at the seam; it takes the knocks on insertion
+LIP_THICKNESS = 2 * LINE_WIDTH  # 0.84
+LIP_HEIGHT = 2.0
+LIP_CLEARANCE = 0.1         # per side; snug press. FIT_CLEARANCE (0.2) would slide
+LIP_TOP_GAP = 0.2           # rebate is this much taller so the lip never bottoms out
+
+# --- Screws: M3 x 6 low pan head (hex socket) ------------------------------
+# Kyle's screws: head 5.8 mm wide, 0.9 mm tall (measured).
+SCREW_INSET_X = 9.0         # from the left/right ends; clears the 9 mm bevel
+SCREW_INSET_Y = 7.0         # from the top/bottom edges
 SCREW_CLEARANCE_DIA = 3.4
-SCREW_HEAD_DIA = 5.5
-SCREW_HEAD_HEIGHT = 3.0
+SCREW_HEAD_DIA = 5.8
+SCREW_HEAD_HEIGHT = 0.9
 SCREW_LENGTH = 6.0          # under the head
-COUNTERBORE_DIA = 6.0
-COUNTERBORE_DEPTH = 3.2     # head sits 0.2 below the face
+COUNTERBORE_DIA = SCREW_HEAD_DIA + 2 * FIT_CLEARANCE   # 6.2
+COUNTERBORE_DEPTH = 6 * LAYER_HEIGHT                   # 1.2: head sits 0.3 below the face;
+                            # whole layers so the bridge layers below line up
+UNDER_HEAD = 1.2            # floor under the head that the screw clamps
+BOSS_WALL = 3 * LINE_WIDTH  # around the counterbore, hanging from the front skin
+# Thread mode. "pla": screw straight into a pilot hole (test prints).
+# "insert": M3 x 4 heat-set insert (final). Posts are sized for the insert
+# either way, so switching never changes the outside of the part.
+SCREW_MODE = "pla"
+PILOT_HOLE_DIA = 2.6        # M3 thread-forming into PLA; 2.5-2.8 is typical
 INSERT_HOLE_DIA = 4.0       # M3 x 4 heat-set insert (e.g. Ruthex short)
-INSERT_HOLE_DEPTH = 5.0
+HOLE_DEPTH = 5.5            # 0.7 deeper than the screw reaches
+POST_WALL = 4 * LINE_WIDTH  # around the insert; inserts need ~1.5 mm to grip
