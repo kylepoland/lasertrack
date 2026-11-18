@@ -79,13 +79,15 @@ Requirements:
   LEDs in the cartridge while it plays. Subtle, not distracting.
 - Material: matte PLA, printed on the H2D.
 
-Constraints to verify by measuring a real case with calipers:
+Measured (2026-11-17): Kyle's cases are 103 x 64 x 14 mm inside, with
+pegless trays. The cartridge is 101 x 62 x 12.5 mm (see `decisions.md`).
 
-- A cassette is about 100 x 64 x 12 mm; the cartridge must be no larger.
-- Cassette cases have two hub pegs that sit in the tape reels. The cartridge
-  needs matching holes or recesses, or the cases need pegless trays.
-- 12 mm total thickness has to hold both shell walls, the NFC tag, screw
-  heads and threads, weights, and any LED and contacts.
+- Inserts into the box **long edge first**, about 1/3 in, label facing the
+  user. The J-card carries the portrait poster; the cartridge label is a
+  landscape version.
+- M3 x 6 hex-socket screws, heads on the front (label) face.
+- Light effects through cartridge contacts and box pogo pins are wanted
+  later; not designed yet.
 
 **Open:**
 

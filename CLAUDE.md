@@ -39,6 +39,13 @@ uv sync                                   # install Python 3.12 + build123d
 uv run python models/tolerance_gauge.py   # build one model
 ```
 
+To check a model visually, render its STL files to PNGs and read them:
+
+```bash
+uv run python render.py cartridge out/cartridge_front.stl out/cartridge_back.stl
+uv run python render.py cartridge_exploded out/cartridge_front.stl:20 out/cartridge_back.stl
+```
+
 Python is pinned to 3.12 because the CAD kernel has no builds for 3.13+.
 
 ## Electronics
