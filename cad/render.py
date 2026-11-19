@@ -3,13 +3,16 @@
 Usage (from cad/):
   uv run python render.py NAME part.stl[:dz] [part.stl[:dz] ...]
 
-Each part may be offset along Z by dz mm (for exploded views). Writes
+Each part may be offset for exploded views: part.stl:dz moves it along Z,
+part.stl:dx,dy,dz moves it in all three. Writes
 out/renders/NAME_{iso,under,front,back,top,side}.png; the axis views are
 orthographic so proportions can be read straight off them.
 
 Optional close-up: --focus X,Y,Z,WIDTH renders NAME_closeup.png, an
 orthographic view centred on X,Y,Z and WIDTH mm wide. --view picks the
 direction from VIEWS (default "side", looking along -X).
+--yup: the parts are modelled with Y up (the slot); turn them so Y points up
+in the views. Applied after the offsets, so offsets stay in the model's frame.
 """
 
 import sys
@@ -29,14 +32,17 @@ VIEWS = {
 }
 
 
-def main(name, specs, focus=None, focus_view="side"):
+def main(name, specs, focus=None, focus_view="side", yup=False):
     OUT.mkdir(parents=True, exist_ok=True)
     meshes = []
     for i, spec in enumerate(specs):
         path, _, dz = spec.partition(":")
         mesh = pv.read(path)
         if dz:
-            mesh = mesh.translate((0, 0, float(dz)))
+            d = [float(v) for v in dz.split(",")]
+            mesh = mesh.translate(tuple(d) if len(d) == 3 else (0, 0, d[0]))
+        if yup:
+            mesh = mesh.rotate_x(90, point=(0, 0, 0))
         meshes.append((mesh, COLORS[i % len(COLORS)]))
 
     views = dict(VIEWS)
@@ -79,4 +85,7 @@ if __name__ == "__main__":
         i = args.index("--view")
         view = args[i + 1]
         del args[i:i + 2]
-    main(args[0], args[1:], focus, view)
+    yup = "--yup" in args
+    if yup:
+        args.remove("--yup")
+    main(args[0], args[1:], focus, view, yup)

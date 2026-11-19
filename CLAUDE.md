@@ -40,6 +40,7 @@ Commands, run from `cad/`:
 ```bash
 uv sync                                   # install Python 3.12 + build123d
 uv run python models/cartridge.py         # build one model
+uv run python models/slot.py              # slot (imports and checks against the cartridge)
 ```
 
 Python is pinned to 3.12 because the CAD kernel has no builds for 3.13+.
@@ -102,8 +103,21 @@ PEI plate. `LINE_WIDTH` (0.42) and `LAYER_HEIGHT` (0.2) are in `params.py`.
    r cartridge_exploded out/cartridge_front.stl:20 out/cartridge_back.stl
    r front_half out/cartridge_front.stl
    r back_half out/cartridge_back.stl
-   r section out/cartridge_section_front.stl out/cartridge_section_back.stl --focus 41.5,25,6.25,16
+   r section_top out/cartridge_section_top_front.stl out/cartridge_section_top_back.stl --focus 38.6,24,6.25,16
+   r section_bottom out/cartridge_section_bottom_front.stl out/cartridge_section_bottom_back.stl --focus 44.7,-25.2,6.25,16
+   r back_detent out/cartridge_back.stl --focus 30,-25,0,20 --view back
+   r back_track out/cartridge_back.stl --focus 50.5,-22,4,24
+   # Slot: modelled Y-up in the cartridge frame, so pass --yup for the full views.
+   r slot out/slot.stl --yup
+   r slot_assembly out/slot.stl out/slot_plunger.stl out/cartridge_front.stl:0.2 out/cartridge_back.stl:0.2 --yup
+   r slot_exploded out/slot.stl out/slot_plunger.stl out/cartridge_front.stl:0,45,0.2 out/cartridge_back.stl:0,45,0.2 --yup
+   S=out/slot_section
+   r slot_section_plunger ${S}_plunger_slot.stl ${S}_plunger_plunger.stl ${S}_plunger_front.stl ${S}_plunger_back.stl --focus 30,-24,2,22
+   r slot_section_rail ${S}_rail_slot.stl ${S}_rail_plunger.stl ${S}_rail_front.stl ${S}_rail_back.stl --focus 48,-21,5,16 --view top
    ```
+
+   With ~50 images, tile them into contact sheets (matplotlib) to look at
+   them all, then open single images where something looks off.
 
 3. Confirm every PNG is newer than the STL it came from. A failed render
    command leaves old images that look like a pass.

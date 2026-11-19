@@ -396,14 +396,20 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "matplotlib" },
     { name = "pyvista" },
+    { name = "scipy" },
 ]
 
 [package.metadata]
 requires-dist = [{ name = "build123d" }]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pyvista", specifier = ">=0.49.2" }]
+dev = [
+    { name = "matplotlib", specifier = ">=3.11.2" },
+    { name = "pyvista", specifier = ">=0.49.2" },
+    { name = "scipy", specifier = ">=1.18.1" },
+]
 
 [[package]]
 name = "lib3mf"

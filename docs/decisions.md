@@ -196,6 +196,75 @@ Supersedes "Print orientation corrected" above.
   8.7 mm. The sticker now sits about 0.8 mm below the frame, which also
   protects its edges.
 
+## 2026-11-18 — Screw layout, bottom text, internal ribs
+
+- **Every screw is equidistant from its two nearest edges.** Kyle's call, for
+  looks. Top pair: 7 mm from the top edge and 7 mm from the bevel, which moves
+  them in to 11.9 mm from the ends (closer to the centre line). Bottom pair:
+  centred in the bottom bar, 5.8 mm from the bottom and 5.8 mm from the ends.
+  The label now sits a uniform 11.6 mm (`LABEL_BAND`) in from the top edge,
+  bevels and bottom edge.
+- **Bottom text 3.5 -> 6.5 mm.** At 3.5 mm Arial Bold strokes are ~0.45 mm, about
+  one line with a 0.4 mm nozzle, and printed badly. Strokes scale at ~0.13 x
+  the font size, so 6.5 mm is the smallest that gives two-line (0.84 mm)
+  strokes. Same as the brand line, which prints well. The cartridge script now
+  measures the strokes and fails if more than 25% of the ink is under 0.84 mm.
+- **Two internal ribs** (3 lines, 1.26 mm) across the short direction at
+  x = +/-22, from the back skin to 0.2 mm under the front skin. Pressing either
+  face lands on a rib, so the shell feels solid and sounds less hollow when it
+  clicks home. They leave a 42.7 mm centre bay for the NFC tag and side bays
+  for weights.
+- **Bottom posts are webbed to the corner walls.** At 5.8 mm in, the post sat
+  0.02 mm off the wall, a sliver the slicer can't print.
+
+## 2026-11-18 — Cartridge slot: tracks plus ball-plunger detents
+
+Models: `cad/models/slot.py` (slot with baseplate) and the slot features in
+`cad/models/cartridge.py`. Research summary: a click feels crisp when
+resistance builds and then drops away suddenly (the "tactile ratio" in switch
+design), not when force is high. So friction is kept low everywhere except one
+detent, and the cartridge lands on a hard floor as the detent drops.
+
+- **Spring ball plungers, not printed springs.** The slot sees every insertion
+  for years; with plungers its wearing part is steel, and each cartridge's
+  seat only sees that cartridge's insertions. PLA flexures fatigue and creep.
+  The feel is tuned by screwing the plungers in or out. PETG printed springs
+  are the fallback (Kyle has PETG).
+- **Plungers: stainless M6 x 10 hex-socket, 20-pack (Amazon B07T6TBNJN).**
+  Easy to get. Ball 3.5 mm and travel 1.0 mm are NOMINAL (typical M6); Amazon
+  blocked automated reading, so measure them when they arrive and update
+  `params.py`.
+- **Plungers press on the back face, not the ends.** An M6 body is 6 mm wide;
+  putting it in an end rail would need a track wider than the back half, and it
+  would cross the seam. On the back face the ball works on a flat, solid skin
+  (doubled to 3.2 mm behind the seat), the plunger sockets are hidden at the
+  back of the box, and the preload pushes the cartridge forward against the
+  rails. Two plungers at x = +/-30, 6 mm above the floor: clear of a centred NFC
+  tag and a reader behind the slot.
+- **Detent profile.** A 35 deg, 1.0 mm entry ramp at the bottom edge (35 deg
+  rather than shallower because the back face prints on the plate and the ramp
+  is an overhang), a short flat, then a 0.6 mm (3-layer) cylindrical seat
+  wider than the ball (R 2.25). The seat sits 0.3 mm above the ball, so the
+  preload drives the cartridge down onto the floor (no rattle) and the click
+  coincides with landing. Insertion climbs 35 deg; removal climbs the 43 deg
+  seat rim, so it goes in easier than it comes out.
+- **Tracks on the ends, back half only, off-centre (z 2.5–5.5).** They locate
+  the cartridge (rails fill the track less `FIT_CLEARANCE` per side) and key it:
+  turned label-backwards, the tracks are on the wrong side and the cartridge
+  stops on the rails. 1.2 mm deep, running 18 mm up from the bottom edge so
+  they're hidden when inserted; the end wall is thickened to 3.36 mm behind
+  them. The rails start 6 mm below the mouth with pointed tops.
+- **Everything else has clearance** (0.5 mm at the ends, 0.3 mm at the faces)
+  so nothing drags before the click; a 1.5 mm lead-in chamfer round the mouth.
+- **Slot prints upright, baseplate down, no support.** Plunger holes are
+  horizontal 5.0 mm teardrops; the plunger forms its own thread in them (9 mm
+  of engagement). Slice the slot with 4+ wall loops so the threads bite
+  perimeters rather than sparse infill. Baseplate has four M3 holes for the
+  future box.
+- **Setting the plungers:** screw in until the ball stands 1.1 mm proud of the
+  back wall face (body flush to +0.1), then tune by feel. The slot script
+  prints this number from the measured ball values.
+
 ## Open questions
 
 See the **Open** items in `product.md`. The biggest are how the two reference

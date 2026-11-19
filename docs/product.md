@@ -98,8 +98,9 @@ pegless trays. The cartridge is 101 x 62 x 12.5 mm (see `decisions.md`).
 - Weight material and target mass.
 - LED: whether to do it at all in V1; contact style (pogo pins on the box
   against pads on the cartridge is the usual approach); colour and behaviour.
-- How the cartridge is retained and how insertion feels (detent, magnet,
-  spring, click).
+- ~~How the cartridge is retained and how insertion feels.~~ Decided
+  2026-11-18: end tracks on rails, plus spring ball plungers clicking into
+  seats on the back face (see `decisions.md`). Feel still to be tuned on a print.
 - How much of the cartridge stays visible when inserted, which decides
   whether a J-card-style label or the LED is seen during playback.
 - J-card template size and how it is printed.
