@@ -59,7 +59,7 @@ CART_FRONT_HALF = 5.0       # front half thickness; back half is the rest
 # (brand) and a bar at the bottom (cassette-style text). Top corners are
 # bevelled parallel to the outline's bevel.
 LABEL_MARGIN = 4.0          # side frame width between outline and recess
-LABEL_DEPTH = 0.4
+LABEL_DEPTH = 5 * LAYER_HEIGHT # 1.0: deep enough that the slicer supports it face-down
 LABEL_SCREW_CLEARANCE = 1.5 # gap between counterbore and recess edge
 LABEL_CORNER_RADIUS = 1.0   # softens sticker corners so they don't lift
 STICKER_GAP = 0.3           # sticker is this much smaller than the recess, per side
@@ -81,7 +81,8 @@ RIB_CENTER_Y = 8.0          # above the slot line, so they stay visible
 
 # Shell construction.
 WALL = 5 * LINE_WIDTH       # 2.10 outer side walls: 2 loops per side + 1 centre line
-SKIN_FRONT = 8 * LAYER_HEIGHT   # 1.6 front face
+SKIN_UNDER_LABEL = 6 * LAYER_HEIGHT  # 1.2 of solid face left under the label recess
+SKIN_FRONT = LABEL_DEPTH + SKIN_UNDER_LABEL  # 2.2 front face
 SKIN_BACK = 8 * LAYER_HEIGHT    # 1.6 back face
 
 # Alignment lip: the back wall's inner half stands up as a lip; the front

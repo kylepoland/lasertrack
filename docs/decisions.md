@@ -184,6 +184,18 @@ Supersedes "Print orientation corrected" above.
   on, on build plate only; if it doesn't put support in the label recess,
   paint a support enforcer on the recess. No support needed anywhere else.
 
+## 2026-11-18 — Label recess 1.0 mm deep
+
+- **Recess deepened from 0.4 to 1.0 mm (5 layers).** At 0.4 mm Bambu Studio
+  generated no support in the face-down recess. The ESPHome cartridge player
+  on Printables, which Kyle has printed successfully, uses a 1 mm recess and
+  the slicer supports it. With the default 0.2 mm support gap, 1 mm leaves
+  room for real support layers.
+- **Front skin is now 2.2 mm** (`LABEL_DEPTH + SKIN_UNDER_LABEL`), keeping
+  1.2 mm of solid face under the label. Interior cavity drops from 9.3 to
+  8.7 mm. The sticker now sits about 0.8 mm below the frame, which also
+  protects its edges.
+
 ## Open questions
 
 See the **Open** items in `product.md`. The biggest are how the two reference
