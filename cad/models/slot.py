@@ -21,6 +21,10 @@ Print orientation: upright, baseplate on the plate, mouth up. No support. The
 plunger holes are horizontal teardrops (point up) so they print round enough
 for the plunger to form its own thread.
 
+Baseplate: flanges on the two ends only, each with two M3 holes, so nothing
+sticks out in front of or behind the slot (room for the NFC reader behind the
+back wall). In the box it screws onto four risers on the chassis plate.
+
 Run (from cad/):  uv run python models/slot.py
 Outputs to cad/out/: slot.step/.stl, slot_plunger.stl (render only),
 slot_assembly.step (slot, plungers, cartridge), slot_section_*.stl.
@@ -82,10 +86,16 @@ def make_rail(sx):
     return chamfer(top, p.RAIL_TIP_CHAMFER)
 
 
+def base_holes():
+    """(x, z) of the four M3 holes in the baseplate's end flanges."""
+    m, i = p.BASE_MARGIN, p.BASE_HOLE_INSET
+    return [(sx * (X_OUT + m - i), z) for sx in (-1, 1) for z in (ZB + i, ZF - i)]
+
+
 def make_slot():
     slot = box(-X_OUT, X_OUT, Y_BOT, Y_TOP, ZB, ZF)
     m = p.BASE_MARGIN
-    base = box(-X_OUT - m, X_OUT + m, Y_BOT, Y_BOT + p.BASE_THICK, ZB - m, ZF + m)
+    base = box(-X_OUT - m, X_OUT + m, Y_BOT, Y_BOT + p.BASE_THICK, ZB, ZF)
     base = chamfer(base.edges().group_by(Axis.Y)[0], p.BASE_CHAMFER)
     slot += base
     slot -= box(-X_IN, X_IN, Y_FLOOR, Y_TOP + 1, Z0, Z1)
@@ -102,10 +112,8 @@ def make_slot():
         hole = Pos(sx * p.PLUNGER_X, BALL_Y) * teardrop(p.PLUNGER_TAP_DIA / 2)
         slot -= extrude(Pos(0, 0, ZB - 1) * hole, Z0 - ZB + 1.01)
 
-    # Mounting holes in the baseplate corners.
-    i = p.BASE_HOLE_INSET
-    for x in (-X_OUT - m + i, X_OUT + m - i):
-        for z in (ZB - m + i, ZF + m - i):
+    # Mounting holes in the end flanges.
+    for x, z in base_holes():
             slot -= Pos(x, Y_BOT + p.BASE_THICK / 2, z) * Cylinder(
                 p.BASE_HOLE_DIA / 2, p.BASE_THICK + 2, rotation=(90, 0, 0))
     return slot

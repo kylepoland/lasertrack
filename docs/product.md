@@ -1,7 +1,9 @@
 # LaserTrack — product brief
 
 Status: requirements captured from Kyle on 2026-11-16; software and
-electronics direction added 2026-11-18. Cartridge and slot are modelled.
+electronics direction added 2026-11-18. Cartridge and slot are modelled and
+printed (feel confirmed good, 2026-11-20). Set-top box first pass modelled
+2026-11-20 (`cad/models/box.py`), not printed.
 Software v1 running on the Pi since 2026-11-20: channels and Plex cartridges
 (simulated tag) verified on the CRT. No wiring is built (RC522 not yet
 connected).
@@ -117,6 +119,8 @@ Requirements:
 - Hex-socket screws visible on the top face as a design element.
 - NFC tag sealed inside.
 - Optional internal weights for heft.
+- Internal ribs on both halves; the front ones stiffen the label face
+  (2026-11-20).
 - Optional contact pins that take power from the box to light one or more
   LEDs in the cartridge while it plays. Subtle, not distracting.
 - Material: matte PLA, printed on the H2D.
@@ -166,8 +170,11 @@ Decided 2026-11-18:
   presses while the Pi is busy decoding.
 - **IR receiver is in V1** (hardware and input handling). Which remote to use
   (an old VCR remote, a bought one, or a custom printed one) is worked out later.
-- **Open:** button type (tactile feel matters); whether Stop stays or pulling
-  the cartridge is enough (4 buttons instead of 5).
+- First pass (2026-11-20): 12 x 12 mm tactile switches under printed caps,
+  EC11 encoder with a printed knob. Not bought; easy to swap (`params.py`).
+  Parts list: `electronics/box-parts.md`.
+- **Open:** button feel once printed; whether Stop stays or pulling the
+  cartridge is enough (4 buttons instead of 5).
 
 ## Hardware
 
@@ -177,14 +184,14 @@ Decided 2026-11-18 unless marked Open. Wiring goes in `electronics/` as pin maps
 |---|---|---|
 | Raspberry Pi 4 (Kyle's) | Main board; runs FS42 and the daemon | 3.3 V logic. Only board in V1 |
 | RC522 NFC reader (Kyle's) | Reads cartridge tag UID | SPI, 3.3 V, wired straight to the Pi |
-| 1.54" 240×240 IPS LCD (ST7789, SPI) | Cover art and progress in cartridge mode; channel number in TV mode | LCD rather than OLED: no burn-in from a channel number shown for hours. Shares SPI with the RC522 |
+| 1.54" 240×240 IPS LCD (ST7789, SPI) | Cover art and progress in cartridge mode; channel number in TV mode | LCD rather than OLED: no burn-in from a channel number shown for hours. Shares SPI with the RC522. Suggested: Adafruit product 3787 (not bought) |
 | 5 push buttons + EC11 rotary encoder with push | Controls above | |
 | IR receiver (TSOP38238) | Remote, later | Needs a window on the front panel |
-| Output-select DIP switch | HDMI or composite, read at boot | See Video output |
+| Output-select switch | HDMI or composite, read at boot | Panel-mount mini toggle on the back panel (was a DIP switch; see `decisions.md`) |
 | Power button on GPIO3 | Safe shutdown and wake | Pulling power can corrupt the SD card |
-| Heatsink + 30 mm 5 V fan | Cooling in a closed box | Pi switches the fan by temperature |
-| Panel-mount USB-C, HDMI, Ethernet, RCA jacks | Back panel | RCA wired from the Pi's 4-pole AV jack (Pi pinout differs from camcorder cables) |
-| Official Pi 5 V 3 A USB-C supply | Power for everything | |
+| Heatsink + 30 mm 5 V fan | Cooling in a closed box | Pi switches the fan by temperature; exhausts through the top grille, intake through the front perforations |
+| Back panel | Power jack, HDMI (panel extension), one 3.5 mm 4-pole AV jack (panel extension), Pi's own Ethernet/USB through a cutout | Kyle's AV cable splits video and stereo audio, so no RCA jacks (2026-11-20) |
+| 5 V 4 A barrel-jack supply (Mean Well GST25 series) | Power for everything | Panel 5.5 x 2.1 jack, then a short barrel-to-USB-C lead into the Pi (2026-11-20, replaces the official USB-C supply) |
 
 - **No microcontroller in V1.** A Raspberry Pi Pico is added later only if the
   cartridge LEDs become colour effects (see `decisions.md` for why).
@@ -201,6 +208,21 @@ Decided 2026-11-18 unless marked Open. Wiring goes in `electronics/` as pin maps
   firmware before Linux starts. The daemon reads the same pin to pick Plex
   quality. Flipping it needs a reboot. Spare switch positions are available
   for later (e.g. NTSC/PAL, 240p/480i).
+
+## Set-top box
+
+First pass modelled 2026-11-20; details and reasons in `decisions.md`.
+
+- About 250 x 150 x 72 mm plus 5 mm feet. Styled after Kyle's reference
+  photos: mint top and tan bottom shells with curled sides, lime chassis plate
+  as a stripe at the seam, white inset panels, orange knob, black feet.
+- Top: the cartridge slot (rim flush, like a bezel) and a fan grille.
+- Front: screen, Power, Play/Pause, Stop, Ch ▲, Ch ▼, status LED, IR window,
+  volume knob, perforated air intake.
+- Back: power jack, HDMI, AV jack, output switch, Pi Ethernet/USB.
+- SD card: reached by removing the back top tile (four screws underneath).
+- **Open:** NFC read range through the slot (reader position is adjustable);
+  every bought part's real dimensions; how it looks and prints.
 
 ## Scope
 

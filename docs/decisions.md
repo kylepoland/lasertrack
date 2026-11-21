@@ -451,3 +451,74 @@ to 480 lines on the Pi 4's GPU (25% dropped for H.264).
 - **Plex ignores positions under 60 s** and keeps the previous one. A
   cartridge pulled in its first minute doesn't move the saved position. This
   is Plex's rule; no change needed.
+
+## 2026-11-20 — Cartridge front ribs
+
+- **Three ribs hang from the inside of the front skin, behind the label**
+  (x = -11, 0, +11; 3 lines, 1.26 mm). Kyle's print showed the label area is
+  the flexy part: it is the thinnest face (1.2 mm under the 1 mm recess) and
+  the centre bay spans 42.7 mm between the back half's ribs. They stop 1.0 mm
+  above the back skin so an NFC sticker or weights still lie flat under them,
+  and stay inside the back half's lip so the halves close. Positions are a
+  param (`FRONT_RIB_X`); they are internal, so they can change freely.
+
+## 2026-11-20 — Set-top box, first pass
+
+Model: `cad/models/box.py`; parts to buy: `electronics/box-parts.md`.
+
+- **Look follows Kyle's reference photos**: mint top shell and tan bottom shell
+  with curled sides, a lime chassis plate showing as a 3 mm stripe along the
+  seam, white panels inset in the open front and back ends, orange knob,
+  black bar feet. Body 250 x 150 x 72 mm plus 5 mm feet; the cartridge stands
+  40 mm above the top. 72 rather than 65 because the slot (26 mm) must be
+  flush with the top and the Pi's GPIO plugs (22.5 mm over the board) must
+  clear the top curl.
+- **The slot's rim is the bezel.** The slot module stands on four risers on
+  the plate, its top flush with the box top, so insertion depth and the
+  visible 40 mm are unchanged and the module stays self-contained for the
+  all-in-one TV.
+- **Slot baseplate flanges moved to the ends only.** The old 8 mm all-round
+  baseplate blocked the spot right behind the back wall where the NFC reader
+  has to be. Pocket, rails and plungers are unchanged; the slot already
+  printed still works as a test piece but the box needs a reprint.
+- **Top shell prints standing on its front end**; every curve is then in the
+  layer plane, so the curls print clean (the reference was printed this way,
+  hence its tiles). It is split into two tiles at the slot's back wall so the
+  slot notch is open at the top of the print.
+- **Bottom shell prints floor-down.** Its lowest curl is a 45 deg facet, so
+  nothing overhangs past 45 deg, and screw columns can rise from the floor.
+- **One screw clamps three parts:** M3 x 35 from underneath, through a column
+  in the bottom shell and the plate, into a tab under the top tile (eight in
+  all). Counterbores in the floor use the cartridge's bridge-layer trick.
+  Panels are held by two M3 x 6 each, up through the floor into a tab. All
+  screws are on the underside, so the top and sides stay clean.
+- **Pi 4 on the plate at the back right**, Ethernet/USB end straight through
+  a cutout in the back panel (no extension cables for those), cable edge
+  facing the middle, fan exhausting through a slotted grille in the top.
+- **NFC reader stands upright 3 mm behind the slot's back wall**, through a
+  slot in the plate, on a printed cradle whose height (`READER_BOTTOM_Z`) is
+  set after the read test. Its loop is ~16 mm below a sticker placed low in
+  the cartridge's centre bay. Unproven: test before trusting it.
+- **Power: 5 V 4 A barrel-jack supply (Mean Well GST25 series) into a
+  panel-mount 5.5 x 2.1 jack, then a short barrel-to-USB-C lead into the
+  Pi.** A fixed 5 V supply avoids the Pi 4's USB-C cable and charger
+  problems and looks cleaner; going through the Pi's USB-C keeps its input
+  protection, which feeding the GPIO 5 V pins would bypass. 4 A leaves room
+  for the fan, screen and cartridge LEDs. Supersedes the official USB-C
+  supply and panel USB-C in the 2026-11-18 electronics pass.
+- **Back panel:** power jack, one 3.5 mm 4-pole AV jack (Kyle's cable splits
+  it into video and stereo audio, so no RCA jacks), HDMI, the Pi's own
+  Ethernet/USB, and the HDMI/composite switch.
+- **Output switch is a panel-mount mini toggle instead of a DIP switch.** It
+  mounts in a round hole on the back panel; a DIP switch needs a board behind
+  a window. It loses the spare DIP positions; add a second toggle if one is
+  wanted.
+- **Front panel:** screen, five buttons on printed caps, IR window, status
+  LED, volume knob, engraved LASERTRACK, and a perforated field that is the
+  fan's air intake. Screen: Adafruit 1.54" 240x240 ST7789 (product 3787).
+  Buttons: 12 x 12 tactile switches on a perfboard strip. Knob: EC11 encoder.
+  None are bought yet; each has a param block so another part can be swapped
+  in.
+- **Bought parts are modelled as stand-ins** (Pi with plug envelopes, screen,
+  button board, encoder, reader, jacks) and the build fails if any part
+  overlaps another.

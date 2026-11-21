@@ -1,7 +1,8 @@
 """Cartridge: two thin-walled shells that fit a cassette case and insert long edge first.
 
-Front half: label recess, engraved text, and the M3 screw heads in counterbores
-inside short bosses hanging from the front skin. Below each counterbore, two
+Front half: label recess, engraved text, the M3 screw heads in counterbores
+inside short bosses hanging from the front skin, and ribs hanging from the
+skin behind the label (the thinnest, most flexible part of the face). Below each counterbore, two
 one-layer "bridge" layers (a slot, then a square) let it print face-down
 without support. Its wall is thinned at the seam (rebate) to receive the back
 half's lip.
@@ -221,6 +222,15 @@ def make_front():
     rebate = band(p.SKIRT, p.WALL + 0.05) - circles(KEEP_R) - rib_zones()
     front -= prism(rebate, SPLIT_Z, SPLIT_Z + p.LIP_HEIGHT + p.LIP_TOP_GAP)
 
+    # Ribs behind the label, down to just above the back skin. They stay inside
+    # the back half's lip, so the halves still close.
+    ribs = None
+    for x in p.FRONT_RIB_X:
+        r = Pos(x, 0) * Rectangle(p.FRONT_RIB_THICKNESS, H)
+        ribs = r if ribs is None else ribs + r
+    rib_in = p.SKIRT + p.LIP_CLEARANCE + p.LIP_THICKNESS + p.LIP_CLEARANCE
+    front += prism(ribs & outline(rib_in), p.SKIN_BACK + p.FRONT_RIB_BACK_GAP, SKIN_FRONT_Z + 0.01)
+
     front -= prism(label_face(), T - p.LABEL_DEPTH, T)
     front -= engraving()
     front -= prism(circles(p.COUNTERBORE_DIA / 2), CB_FLOOR_Z, T)
@@ -369,6 +379,8 @@ def check(front, back):
           f"{p.LABEL_DEPTH / p.LAYER_HEIGHT:.0f}, engraving {p.ENGRAVE_DEPTH / p.LAYER_HEIGHT:.0f}, "
           f"counterbore {p.COUNTERBORE_DEPTH / p.LAYER_HEIGHT:.0f} + 2 bridge layers, "
           f"detent seat {p.DETENT_DEPTH / p.LAYER_HEIGHT:.0f}")
+    print(f"front ribs at x {p.FRONT_RIB_X}, {p.FRONT_RIB_THICKNESS:.2f} thick, stop "
+          f"{p.FRONT_RIB_BACK_GAP} above the back skin")
     print(f"interior cavity height: {SKIN_FRONT_Z - p.SKIN_BACK:.2f} mm; inner ribs stop "
           f"{p.INNER_RIB_GAP} under the front skin; bays: centre "
           f"{2 * p.INNER_RIB_X - p.INNER_RIB_THICKNESS:.1f} wide")

@@ -139,6 +139,14 @@ INNER_RIB_X = 22.0          # rib centrelines at +/- this
 INNER_RIB_THICKNESS = 3 * LINE_WIDTH  # 1.26
 INNER_RIB_GAP = 0.2         # below the front skin, so the halves never touch there
 
+# Front ribs: hang from the inside of the front skin, behind the label, where
+# the face is thinnest (1.2 mm under the label) and flexed when pressed. They
+# stop short of the back skin so an NFC sticker or weights still lie flat
+# underneath, and they clear the back half's lip, ribs and posts.
+FRONT_RIB_X = (-11.0, 0.0, 11.0)       # rib centrelines; internal, change freely
+FRONT_RIB_THICKNESS = 3 * LINE_WIDTH   # 1.26
+FRONT_RIB_BACK_GAP = 1.0               # above the back skin (NFC sticker, weights)
+
 # --- Cartridge slot ---------------------------------------------------------
 # Tracks: a groove up each end of the cartridge (back half only, off-centre
 # in thickness) rides on a rail in the slot. The rails locate the cartridge
@@ -185,7 +193,168 @@ SLOT_BACK_WALL = 9.0        # holds the plunger thread; plunger's socket end sit
 SLOT_FLOOR = 4.0            # under the pocket; the floor is the hard stop
 SLOT_LEAD_IN = 1.5          # 45 deg chamfer round the mouth
 BASE_THICK = 3.0
-BASE_MARGIN = 8.0           # baseplate beyond the slot body
+BASE_MARGIN = 8.0           # baseplate flanges beyond the slot's END walls only (X).
+                            # Flush front and back so the NFC reader can sit right
+                            # behind the back wall and the front panel parts in front.
 BASE_HOLE_DIA = SCREW_CLEARANCE_DIA  # M3 mounting holes for the future box
 BASE_HOLE_INSET = 4.0
 BASE_CHAMFER = 0.6          # bottom edge on the plate
+
+# --- Set-top box --------------------------------------------------------------
+# Axes: X = width (left/right), Y = depth with the FRONT at -Y, Z = up, Z = 0 is
+# the underside of the body (the feet hang below it). Style after Kyle's
+# reference photos: a mint top shell and a tan bottom shell whose sides curl
+# round, a lime chassis plate showing as a stripe at the seam, and white panels
+# inset at the open front and back ends.
+BOX_W = 250.0
+BOX_D = 150.0
+BOX_H = 72.0                # body; the cartridge stands ~40 mm above this
+BOX_TOP_RADIUS = 20.0       # side curl of the top shell (outside)
+BOX_BOTTOM_RADIUS = 20.0    # side curl of the bottom shell; its lowest part is a
+                            # 45 deg facet so the bottom shell prints floor-down
+SHELL_WALL = 7 * LINE_WIDTH # 2.94; the top spans 244 mm, so thicker than the
+                            # cartridge's 5 lines to feel solid under a hand
+BOTTOM_SKIN = 15 * LAYER_HEIGHT  # 3.0 floor (bottom shell prints floor-down)
+PLATE_THICK = 15 * LAYER_HEIGHT  # 3.0 chassis plate (prints flat)
+PLATE_TOP_Z = 32.0          # seam: bottom shell below, plate, top shell above
+TILE_GAP = 0.2              # between the front and back top tiles (a crisp seam line)
+
+# Front and back panels sit inside the open ends of the shells.
+PANEL_THICK = 15 * LAYER_HEIGHT  # 3.0; panels print face-down, so whole layers
+FRONT_PANEL_INSET = 4.0     # shell edge to panel face; a shadow line round the panel
+BACK_PANEL_INSET = 2.0      # less at the back so the Pi's ports reach the panel face
+FRONT_COMPONENT_DEPTH = 13.0  # room behind the front panel for its boards; the
+                              # chassis plate stops this far behind the panel
+
+# Shell screws: M3 from underneath, through a column in the bottom shell and
+# the plate, into a tab on the top tile. One screw clamps all three parts.
+# M3 x 35 pan head (to buy). Counterbored in the floor (bridge layers, prints
+# floor-down without support).
+SHELL_SCREW_X = 108.0       # flat part of the floor ends at ~113 (curl facet)
+SHELL_SCREW_Y = (-44.0, -29.0, 12.0, 37.0)   # 2 per side on each top tile; the back pair
+                            # stays clear of the Pi standoffs (y -11.5 and 46.5)
+SHELL_SCREW_LENGTH = 35.0
+TILE_TAB_THICK = 14 * LINE_WIDTH   # 5.88: tab under the top tile's side wall
+TILE_TAB_HALF = 5.0         # tab half-length along Y around the screw
+COLUMN_OD = 8.0
+# Panels: two M3 x 6 (Kyle's) up through the floor into a tab on each panel.
+PANEL_TAB_X = 80.0
+PANEL_TAB_DEPTH = 10.0      # along Y, into the box
+PANEL_TAB_WIDTH = 14.0      # along X
+PANEL_TAB_THICK = 12 * LINE_WIDTH  # 5.04 along Z, standing on the floor (a wall in the print)
+
+# Feet: four printed bars glued into shallow pockets in the floor.
+FOOT_W = 10.0               # X
+FOOT_L = 40.0               # Y
+FOOT_H = 5.0
+FOOT_X = 85.0
+FOOT_Y = 45.0
+FOOT_POCKET = 5 * LAYER_HEIGHT   # 1.0
+FOOT_CLEARANCE = 0.2
+
+# Slot placement: the slot's top is flush with the box top (its rim shows as
+# a bezel); it stands on four risers on the chassis plate.
+SLOT_CENTER_Y = -30.0       # cartridge mid-thickness, from the box centre
+RISER_OD = 8.0
+SLOT_SCREW_PILOT = PILOT_HOLE_DIA
+
+# Raspberry Pi 4 (Kyle's). NOMINAL from the Pi 4 drawing: 85 x 56 board, M2.5
+# holes 3.5 in from the edges, 58 mm apart along the board. Ethernet/USB end
+# faces the back panel; USB-C/HDMI/AV edge faces the middle (cable room); GPIO
+# edge faces the right side.
+PI_L = 85.0
+PI_W = 56.0
+PI_T = 1.6
+PI_HOLE_INSET = 3.5
+PI_HOLE_SPAN = 58.0
+PI_X0 = 60.5                # board's left (cable) edge; keeps the GPIO plugs under the curl
+PI_STANDOFF = 8.0           # plate top to board underside
+PI_STANDOFF_OD = 6.0
+PI_PILOT = 2.2              # M2.5 thread-forming into PLA
+PI_PORT_OVERHANG = 2.5      # NOMINAL: Ethernet/USB faces beyond the board edge
+PI_PORT_HEIGHT = 16.0       # USB stack above the board
+PI_PORT_DEPTH = 21.0        # Ethernet jack length along the board
+PI_FAN_STACK = 17.0         # heatsink + 30 mm fan above the board (envelope)
+PI_GPIO_STACK = 22.5        # header + Dupont housings above the board
+PI_PLUG = (20.0, 12.0, 9.0) # envelope of a cable plug on the cable edge (X, Y, Z)
+
+# Top grille over the Pi's fan: slots along Y.
+GRILLE_SLOT_W = 2.5
+GRILLE_PITCH = 5.0
+GRILLE_X = 36.0             # extent across the slots (kept on the flat top)
+GRILLE_Y = 50.0             # slot length
+
+# NFC reader (Kyle's RC522). NOMINAL 60 x 40 board, header on a short edge,
+# antenna loop at the other end. Stands upright behind the slot's back wall,
+# through a slot in the plate, resting on a printed cradle on the floor.
+READER_W = 60.0
+READER_H = 40.0
+READER_T = 1.6
+READER_GAP = 3.0            # behind the slot's back wall (plunger sockets stick out 0.9)
+READER_X = -10.0            # board centre; the loop sits ~10 off-centre, so the
+                            # loop is roughly centred on the cartridge
+READER_BOTTOM_Z = 26.0      # tune after the read test: set by the cradle height
+
+# --- Front panel parts ----------------------------------------------------
+# Every part is a parameter block so a different screen or button can be
+# swapped in by editing values here.
+CONTROL_Z = 44.0            # centre line of the screen, buttons, IR and knob
+
+# Screen: Adafruit 1.54" 240x240 IPS, ST7789 (product 3787). NOMINAL from the
+# product page: board ~43.7 x 41.8, M2.5 holes on 36.8 x 35.6, active area
+# 27.7 square. Measure when it arrives.
+LCD_X = -88.0
+LCD_BOARD = (43.7, 41.8)
+LCD_HOLES = (36.8, 35.6)
+LCD_ACTIVE = 27.7
+LCD_WINDOW_MARGIN = 0.6     # window larger than the active area, per side
+LCD_FACE_HEIGHT = 3.0       # NOMINAL: PCB top to glass face (sets post length)
+LCD_PILOT = 2.2             # M2.5
+
+# Buttons: 12 x 12 mm tactile switches (7.3 mm tall with plunger) soldered to
+# a strip of perfboard behind the panel, pressed through printed caps.
+BUTTON_X = (-48.0, -30.0, -12.0, 6.0, 24.0)   # Power, Play/Pause, Stop, Ch up, Ch down
+CAP_DIA = 10.0
+CAP_PROUD = 2.0             # in front of the panel face
+CAP_FLANGE_DIA = 13.0       # behind the panel; keeps the cap in
+CAP_FLANGE = 6 * LAYER_HEIGHT   # 1.2
+TACT_SIZE = 12.0
+TACT_HEIGHT = 7.3           # board to plunger top
+BUTTON_BOARD = (-60.0, 60.0, 30.0, 60.0)   # perfboard x0, x1, z0, z1 (cut to size)
+BUTTON_BOARD_T = 1.6
+BUTTON_BOARD_HOLE_INSET = 3.0
+IR_X = 48.0                 # TSOP38238 on the button board
+IR_HOLE = 6.0
+LED_X, LED_Z = -48.0, 56.0  # 3 mm status LED above Power
+LED_HOLE = 3.2
+
+# Volume: EC11 rotary encoder with push, M7 bushing, 6 mm D shaft.
+ENC_X = 88.0
+ENC_HOLE = 7.4
+ENC_BODY = (12.5, 12.5, 7.0)   # behind the panel (X, Z, depth)
+ENC_SHAFT_DIA = 6.0
+ENC_SHAFT_FLAT = 4.5        # across the D flat
+KNOB_DIA = 32.0
+KNOB_H = 14.0
+KNOB_GAP = 1.5              # knob to panel face
+KNOB_BORE_DEPTH = 10.0
+KNOB_GRIP_COUNT = 24        # shallow flutes round the side
+
+# Perforated intake round the controls (the fan pulls air in here and out the top).
+PERF_DIA = 2.4
+PERF_PITCH = 4.8
+PERF_KEEPOUT = 3.0          # clear ring round each control
+PERF_EDGE = 6.0             # clear band inside the panel edge
+
+PANEL_TEXT = "LASERTRACK"
+PANEL_TEXT_Z = 58.0
+PANEL_TEXT_X = -12.0
+
+# --- Back panel parts -----------------------------------------------------
+BACK_ROW_Z = 50.0
+DC_JACK_X, DC_JACK_HOLE = 40.0, 8.0     # 5.5 x 2.1 panel jack; NOMINAL hole, check the jack bought
+AV_JACK_X, AV_JACK_HOLE = 18.0, 6.2     # 3.5 mm 4-pole panel extension to the Pi's AV jack
+HDMI_X = -12.0                          # panel-mount HDMI extension (micro-HDMI to HDMI)
+HDMI_CUTOUT = (16.0, 7.0)               # NOMINAL; check the cable bought
+HDMI_EAR_SPAN = 28.0
+TOGGLE_X, TOGGLE_HOLE = -42.0, 6.2      # mini toggle: HDMI / composite, read at boot

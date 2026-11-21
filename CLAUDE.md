@@ -42,7 +42,13 @@ Commands, run from `cad/`:
 uv sync                                   # install Python 3.12 + build123d
 uv run python models/cartridge.py         # build one model
 uv run python models/slot.py              # slot (imports and checks against the cartridge)
+uv run python models/box.py               # set-top box (imports the slot and cartridge; ~15 s)
 ```
+
+The box build fails if any two parts overlap, printed or bought (bought
+parts are modelled as stand-ins: Pi, screen, button board, encoder, reader,
+jacks). Its section cuts use plane `split`, not box intersections, which hung
+OpenCascade on the bottom shell.
 
 Python is pinned to 3.12 because the CAD kernel has no builds for 3.13+.
 
@@ -96,7 +102,10 @@ PEI plate. `LINE_WIDTH` (0.42) and `LAYER_HEIGHT` (0.2) are in `params.py`.
 
 1. Delete `cad/out/renders/*.png`, rebuild, and confirm the printed checks pass.
 2. Render every view of every part, plus orthographic section close-ups of
-   joints (`--focus X,Y,Z,WIDTH`, optionally `--view front`), e.g.:
+   joints (`--focus X,Y,Z,WIDTH`, optionally `--view front`). `cad/qc_renders.sh`
+   runs the full set (cartridge, slot, box, ~130 images). The box is modelled
+   Z up with the front at -Y, so its renders pass `--zup`; `part.stl@#rrggbb`
+   sets a part's colour. The cartridge and slot commands, for reference:
 
    ```bash
    r() { uv run python render.py "$@" >/dev/null; }   # a function, not $VAR: zsh won't split it
@@ -117,7 +126,7 @@ PEI plate. `LINE_WIDTH` (0.42) and `LAYER_HEIGHT` (0.2) are in `params.py`.
    r slot_section_rail ${S}_rail_slot.stl ${S}_rail_plunger.stl ${S}_rail_front.stl ${S}_rail_back.stl --focus 48,-21,5,16 --view top
    ```
 
-   With ~50 images, tile them into contact sheets (matplotlib) to look at
+   With this many images, tile them into contact sheets (matplotlib) to look at
    them all, then open single images where something looks off.
 
 3. Confirm every PNG is newer than the STL it came from. A failed render

@@ -4,7 +4,8 @@ Usage (from cad/):
   uv run python render.py NAME part.stl[:dz] [part.stl[:dz] ...]
 
 Each part may be offset for exploded views: part.stl:dz moves it along Z,
-part.stl:dx,dy,dz moves it in all three. Writes
+part.stl:dx,dy,dz moves it in all three. Append @#rrggbb to set its colour
+(e.g. out/box_bottom.stl@#cfae7f); otherwise colours cycle. Writes
 out/renders/NAME_{iso,under,front,back,top,side}.png; the axis views are
 orthographic so proportions can be read straight off them.
 
@@ -13,6 +14,8 @@ orthographic view centred on X,Y,Z and WIDTH mm wide. --view picks the
 direction from VIEWS (default "side", looking along -X).
 --yup: the parts are modelled with Y up (the slot); turn them so Y points up
 in the views. Applied after the offsets, so offsets stay in the model's frame.
+--zup: the parts are modelled Z up with the front at -Y (the box); use views
+named for that frame (front looks at the -Y face, top looks down).
 """
 
 import sys
@@ -30,12 +33,21 @@ VIEWS = {
     "side": ((1, 0, 0), (0, 1, 0)),
     "under": ((0.8, -1.2, -1.4), (0, 0, 1)),
 }
+VIEWS_ZUP = {
+    "iso": ((-1.0, -1.7, 1.1), (0, 0, 1)),
+    "front": ((0, -1, 0), (0, 0, 1)),
+    "back": ((0, 1, 0), (0, 0, 1)),
+    "top": ((0, 0, 1), (0, 1, 0)),
+    "side": ((1, 0, 0), (0, 0, 1)),
+    "under": ((0.8, -1.2, -1.4), (0, 0, 1)),
+}
 
 
-def main(name, specs, focus=None, focus_view="side", yup=False):
+def main(name, specs, focus=None, focus_view="side", yup=False, zup=False):
     OUT.mkdir(parents=True, exist_ok=True)
     meshes = []
     for i, spec in enumerate(specs):
+        spec, _, color = spec.partition("@")
         path, _, dz = spec.partition(":")
         mesh = pv.read(path)
         if dz:
@@ -43,11 +55,12 @@ def main(name, specs, focus=None, focus_view="side", yup=False):
             mesh = mesh.translate(tuple(d) if len(d) == 3 else (0, 0, d[0]))
         if yup:
             mesh = mesh.rotate_x(90, point=(0, 0, 0))
-        meshes.append((mesh, COLORS[i % len(COLORS)]))
+        meshes.append((mesh, color or COLORS[i % len(COLORS)]))
 
-    views = dict(VIEWS)
+    table = VIEWS_ZUP if zup else VIEWS
+    views = dict(table)
     if focus:
-        views = {"closeup": VIEWS[focus_view]}
+        views = {"closeup": table[focus_view]}
     for view, (direction, up) in views.items():
         pl = pv.Plotter(off_screen=True, window_size=(1400, 1000))
         pl.set_background("#f4f2ee")
@@ -88,4 +101,7 @@ if __name__ == "__main__":
     yup = "--yup" in args
     if yup:
         args.remove("--yup")
-    main(args[0], args[1:], focus, view, yup)
+    zup = "--zup" in args
+    if zup:
+        args.remove("--zup")
+    main(args[0], args[1:], focus, view, yup, zup)
