@@ -17,6 +17,7 @@ invent requirements; ask.
 |---|---|
 | `cad/` | build123d (Python) models. `params.py` holds every shared dimension. |
 | `firmware/` | PlatformIO project (not created yet). |
+| `software/` | Python for the Raspberry Pi: the LaserTrack daemon, Pi setup scripts. See its README. |
 | `electronics/` | Pin-map tables in Markdown; KiCad only if a circuit outgrows a table. |
 | `docs/` | `product.md` is the product brief; `decisions.md` logs what was decided and why. |
 | `vendor/` | Downloaded STEP models and datasheets for bought parts. |
@@ -103,7 +104,7 @@ PEI plate. `LINE_WIDTH` (0.42) and `LAYER_HEIGHT` (0.2) are in `params.py`.
    r cartridge_exploded out/cartridge_front.stl:20 out/cartridge_back.stl
    r front_half out/cartridge_front.stl
    r back_half out/cartridge_back.stl
-   r section_top out/cartridge_section_top_front.stl out/cartridge_section_top_back.stl --focus 38.6,24,6.25,16
+   r section_top out/cartridge_section_top_front.stl out/cartridge_section_top_back.stl --focus 35.6,25.2,6.25,16
    r section_bottom out/cartridge_section_bottom_front.stl out/cartridge_section_bottom_back.stl --focus 44.7,-25.2,6.25,16
    r back_detent out/cartridge_back.stl --focus 30,-25,0,20 --view back
    r back_track out/cartridge_back.stl --focus 50.5,-22,4,24

@@ -4,6 +4,7 @@ A 3D-printed TV set-top box that takes NFC cartridges. Personal project.
 
 - `cad/` — parametric models in Python (build123d)
 - `firmware/` — microcontroller code
+- `software/` — Raspberry Pi software (daemon, FieldStation42 setup)
 - `electronics/` — wiring and pin maps
 - `docs/` — decisions and notes
 - `vendor/` — third-party part models and datasheets

@@ -1,0 +1,14 @@
+[Unit]
+Description=FieldStation42 player
+# Started and stopped by the LaserTrack daemon (channels mode on/off).
+# Our own unit rather than FS42's install_services.sh, so its name and
+# behaviour are known and it is never started behind the daemon's back.
+
+[Service]
+WorkingDirectory=%h/FieldStation42
+ExecStart=%h/FieldStation42/env/bin/python3 field_player.py
+Restart=on-failure
+RestartSec=5
+# Stopping must also end FS42's mpv and API server (same cgroup).
+KillMode=control-group
+TimeoutStopSec=10

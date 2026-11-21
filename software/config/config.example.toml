@@ -1,0 +1,41 @@
+# LaserTrack settings. Copied to ~/.config/lasertrack/config.toml by
+# setup_pi.sh; edit that copy on the Pi. Every key is optional (defaults in
+# src/lasertrack/config.py). Secrets do not go here.
+
+# Which TV is connected. Must match the boot config (`setup_pi.sh output ...`).
+# composite: Plex transcodes cartridges to 480p. hdmi: Plex direct-plays.
+output = "composite"
+
+# Read-only mount of the NAS media folder (//192.168.1.157/storage/media).
+media_root = "/mnt/media"
+
+[plex]
+server_name = "Blockbuster"
+# url = "http://<nas-core IP>:32400"   # optional; default finds it via plex.tv
+composite_resolution = "720x480"
+composite_bitrate_kbps = 2000
+hdmi_mode = "direct"        # "transcode" for Wi-Fi if direct play stutters
+
+[nfc]
+reader = "rc522"            # "sim" until the RC522 is wired (web page simulates tags)
+reset_gpio = 25
+rx_gain = 7
+
+[web]
+port = 8080
+
+[fs42]
+dir = "~/FieldStation42"
+service = "fs42.service"
+
+# Test channels for FieldStation42. Each folder (relative to media_root) is
+# symlinked into FS42's catalog as one tag; tags rotate hour by hour.
+[[channels]]
+name = "LT Movies"
+number = 3
+folders = ["Movies"]
+
+[[channels]]
+name = "LT TV"
+number = 4
+folders = ["TV"]

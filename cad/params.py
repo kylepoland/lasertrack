@@ -60,7 +60,9 @@ CART_FRONT_HALF = 5.0       # front half thickness; back half is the rest
 # outline's bevel.
 LABEL_MARGIN = 4.0          # side frame width between outline and recess
 LABEL_DEPTH = 5 * LAYER_HEIGHT # 1.0: deep enough that the slicer supports it face-down
-LABEL_SCREW_CLEARANCE = 1.5 # gap between a top counterbore and the label edge
+LABEL_BAND = 11.6           # label inset from top edge, bevels and bottom edge;
+                            # the screw rows and text lines sit in the middle of it
+LABEL_SCREW_CLEARANCE = 1.5 # minimum gap between any counterbore and the label (checked)
 LABEL_CORNER_RADIUS = 1.0   # softens sticker corners so they don't lift
 STICKER_GAP = 0.3           # sticker is this much smaller than the recess, per side
 
@@ -69,6 +71,9 @@ ENGRAVE_DEPTH = 0.6
 TEXT_FONT = "Arial"
 BRAND_TEXT = "LASERTRACK"
 BRAND_TEXT_SIZE = 6.5
+BRAND_LETTER_GAP = 1.0      # minimum gap between neighbouring letters' boxes. Arial's
+                            # own spacing left some letters ~0.4 mm apart, too little for
+                            # the slicer to lay walls between them (needs MIN_STROKE)
 BAR_TEXT = "HI-FI  \u00b7  120 MIN"
 BAR_TEXT_SIZE = 6.5         # was 3.5: strokes came out ~0.45 mm, too thin to print
 # Engraved strokes must be at least this wide to print with a 0.4 mm nozzle:
@@ -101,12 +106,10 @@ LIP_TOP_GAP = 0.2           # rebate is this much taller so the lip never bottom
 
 # --- Screws: M3 x 6 low pan head (hex socket) ------------------------------
 # Kyle's screws: head 5.8 mm wide, 0.9 mm tall (measured).
-# Each screw is the same distance from its two nearest edges.
-#   Top pair: TOP_SCREW_INSET from the top edge and from the bevel, which puts
-#   it further in from the end than the bottom pair.
-#   Bottom pair: centred in the bottom bar (half its height), and the same
-#   distance in from the end.
-TOP_SCREW_INSET = 7.0       # from the top edge and from the bevel
+# Both rows sit in the middle of their band (top band / bottom bar), level
+# with the text. The bottom pair is the same distance in from the end as from
+# the bottom edge; the top pair sits further in, toward the logo.
+TOP_SCREW_X_INSET = 14.9    # from the end (was 11.9; moved 3 mm toward the logo)
 SCREW_CLEARANCE_DIA = 3.4
 SCREW_HEAD_DIA = 5.8
 SCREW_HEAD_HEIGHT = 0.9
@@ -114,11 +117,8 @@ SCREW_LENGTH = 6.0          # under the head
 COUNTERBORE_DIA = SCREW_HEAD_DIA + 2 * FIT_CLEARANCE   # 6.2
 COUNTERBORE_DEPTH = 6 * LAYER_HEIGHT                   # 1.2: head sits 0.3 below the face;
                             # whole layers so the bridge layers below line up
-# Derived screw positions (see TOP_SCREW_INSET above).
-TOP_SCREW_X_INSET = (CART_TOP_CHAMFER - TOP_SCREW_INSET
-                     + TOP_SCREW_INSET * 2 ** 0.5)      # 11.90 from the end
-LABEL_BAND = TOP_SCREW_INSET + COUNTERBORE_DIA / 2 + LABEL_SCREW_CLEARANCE  # 11.6
-BOTTOM_SCREW_INSET = LABEL_BAND / 2                     # 5.8 from bottom and end
+SCREW_ROW_INSET = LABEL_BAND / 2   # 5.8: both rows, from the top / bottom edge
+BOTTOM_SCREW_INSET = SCREW_ROW_INSET  # bottom pair, from the end
 UNDER_HEAD = 1.2            # floor under the head that the screw clamps
 BOSS_WALL = 3 * LINE_WIDTH  # around the counterbore, hanging from the front skin
 # Thread mode. "pla": screw straight into a pilot hole (test prints).

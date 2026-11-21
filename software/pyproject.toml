@@ -1,0 +1,30 @@
+[project]
+name = "lasertrack"
+version = "0.1.0"
+description = "LaserTrack box software: NFC cartridges play from Plex, FieldStation42 runs the channels."
+requires-python = ">=3.11"
+# spidev, gpiozero and lgpio come from apt (python3-spidev etc.) and reach the
+# venv through --system-site-packages; they only exist on the Pi.
+dependencies = [
+    "plexapi>=4.15",
+    "python-mpv-jsonipc>=1.2",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+lasertrack = "lasertrack.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

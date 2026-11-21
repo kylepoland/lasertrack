@@ -1,0 +1,11 @@
+[Unit]
+Description=LaserTrack daemon (NFC cartridges, Plex, hands the screen to FieldStation42)
+
+[Service]
+# Started by ~/.config/autostart/lasertrack.desktop once the desktop session
+# is up (it needs the Wayland display), so there is no [Install] section.
+ExecStart=%h/lasertrack/.venv/bin/lasertrack run
+Restart=on-failure
+RestartSec=5
+# If the daemon dies, put channels back on.
+ExecStopPost=/usr/bin/systemctl --user start fs42.service

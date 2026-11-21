@@ -265,8 +265,189 @@ detent, and the cartridge lands on a hard floor as the detent drops.
   back wall face (body flush to +0.1), then tune by feel. The slot script
   prints this number from the measured ball values.
 
+## 2026-11-18 — Top screws level with the logo; logo letter spacing
+
+Supersedes the top-screw placement in "Screw layout, bottom text, internal ribs".
+
+- **Top screws and the logo sit in the middle of the top band**, 5.8 mm below
+  the top edge, the same as the bottom row and bottom text in the bottom bar.
+  `LABEL_BAND` (11.6) is now a plain parameter; both screw rows and both text
+  lines are derived from it.
+- **Top screws moved 3 mm toward the logo**: 14.9 mm from the ends (was 11.9).
+  Counterbore clearances: 2.7 to the top edge, 5.2 to the bevel, 2.7 to the label.
+- **Logo letters laid out one by one with 1.0 mm between letter boxes.** With
+  Arial's own spacing some letters were ~0.4 mm apart, not enough for the
+  slicer to lay walls between them (two lines, 0.84 mm). The logo is now 49.2 mm
+  wide (was 44.3). A raster check confirms no plastic narrower than 0.84 mm is
+  left between letters; what the check still flags is inside-corner rounding
+  and the small counter inside each A.
+- **Top posts webbed to the top wall**, like the bottom ones: at 5.8 mm in, the
+  post edge sat 0.02 mm off the wall.
+
+## 2026-11-18 — Software architecture
+
+Details in `product.md` (Software, Media).
+
+- **FieldStation42 for channels, plus a small LaserTrack daemon in Python for
+  everything else** (option (a)). Scheduling channels is most of FS42's work,
+  so rewriting it (option (c)) would waste effort; 240-MP (option (b)) has no
+  channels and is C++/Qt under GPL. We borrow 240-MP's look, not its code.
+  Python matches FS42 and the `python-plexapi` library.
+- **The daemon owns all input** and switches modes by stopping FS42's player
+  and starting its own mpv, and back. Buttons change meaning by mode, so
+  letting FS42 and mpv read keys directly would make them fight.
+- **Cartridges play through Plex; channels read the NAS share.** Supersedes
+  the "skip Plex" lean of 2026-11-16, for cartridges only. Kyle wants a
+  cartridge to resume where he left off and to show up in Plex's Continue
+  Watching on his phone; that needs Plex's saved positions and progress
+  reports. Channels must not touch Plex watch history.
+- **A cartridge stores only its tag UID**; the box holds the mapping. Tags are
+  Kyle's NTAG215 stickers.
+- **No menus on the TV; cartridges are assigned from a web page on a phone.**
+  Keeps the TV side passive and the button count low, following 240-MP's
+  "navigation is not complicated".
+- **No duplicate transcoded library for the channels.** Kyle's call: disk
+  space is expensive. How channels get playable quality is still open.
+
+## 2026-11-18 — Electronics, first pass
+
+Parts list in `product.md` (Hardware).
+
+- **Raspberry Pi 4 only, no microcontroller in V1.** The RC522, buttons, knob,
+  IR receiver and screen all wire to Pi GPIO. Considered a Raspberry Pi Pico
+  as a USB front-panel controller. It would give instant-on (the Pi takes
+  20–30 s to boot), precise LED timing, a self-contained receptacle module,
+  and protect the Pi from wiring mistakes, at the cost of a second program and
+  a serial link. For buttons and NFC it adds no reliability: Linux's kernel
+  drivers (`gpio-keys`, `rotary-encoder`) work on interrupts and don't drop
+  presses, and NFC reliability depends on the antenna, not the board. Plain
+  cartridge LEDs can run from a GPIO pin through a transistor. A Pico comes in
+  only if the cartridge LEDs become colour effects: addressable LEDs and
+  smooth hardware fades on the Pi 4 would use the PWM block that drives the
+  headphone-jack audio, which the CRT needs.
+- **Output chosen by a DIP switch read at boot** through a conditional
+  `[gpioN=1]` section in `config.txt`. Only one TV is connected at a time and
+  it rarely changes, so a boot-time switch is simplest and most reliable.
+  Mirroring both outputs at once was considered and dropped (fiddly on a Pi 4);
+  an HDMI-to-composite converter was rejected because the Pi's own composite
+  looks better on a CRT.
+- **1.54" 240×240 IPS LCD (ST7789), not OLED.** A colour OLED's blacks look
+  better, but a channel number shown for hours would burn in. The LCD also
+  has more pixels (240×240 vs 128×128).
+- **Controls: Power, Play/Pause, Stop/Eject, Ch ▲, Ch ▼, and a volume knob
+  with push-to-mute.** Power is on GPIO3, which can both shut the Pi down
+  safely and wake it.
+- **IR receiver in V1; the remote itself later.** The receiver costs about $1
+  and Linux supports it out of the box; adding the window to the front panel
+  now avoids redesigning the box. A custom printed remote is a separate
+  project (its own microcontroller, battery life, enclosure).
+- **Also in the box:** heatsink and temperature-switched fan, panel-mount
+  back-panel ports (USB-C, HDMI, Ethernet, RCA), official 5 V 3 A supply.
+
 ## Open questions
 
-See the **Open** items in `product.md`. The biggest are how the two reference
-projects are combined, the main board, and the cartridge's internal layout
-within a cassette's 12 mm thickness.
+See the **Open** items in `product.md`. The biggest are how channels play the
+Blu-ray rips without a duplicate library, which NAS and network the box uses,
+and the cartridge's internal layout within a cassette's 12 mm thickness.
+
+## 2026-11-19 — Software v1
+
+Code: `software/`; setup and test plan in `software/README.md`.
+
+- **Pi OS 64-bit with desktop (Trixie).** FieldStation42's docs recommend
+  Trixie, and its player opens a window, so the desktop session is kept.
+  Running without a desktop was not confirmed in its docs.
+- **`software/` holds the Pi code**, separate from `firmware/`, which stays
+  for PlatformIO microcontroller projects.
+- **Media share mounted read-only.** Only `//192.168.1.157/storage/media` is
+  mounted, at `/mnt/media`, with `ro` and read-only file modes; setup refuses
+  to finish unless a test write fails. Kyle's priority is that nothing on the
+  Pi can harm the library. A read-only OMV user for the Pi is the next layer
+  (server-side, so it holds even if the Pi is misconfigured).
+- **FieldStation42 sees the library through symlinks.** FS42 has no SMB
+  support of its own; its docs recommend symlinking content folders into its
+  catalog. A symlink is only a pointer; removing it removes the pointer.
+- **FS42 runs as our own systemd user service (`fs42.service`)**, started and
+  stopped by the daemon. Not FS42's `install_services.sh`, so the service name
+  and behaviour are known and nothing starts it behind the daemon's back.
+  Both start from the desktop session (XDG autostart) because they need its
+  Wayland display.
+- **One `mpv.conf` for both players.** FS42 sets no decoder options and has no
+  setting to pass them, but its mpv reads `~/.config/mpv/mpv.conf`.
+- **The MKV question is answered by measuring.** `lasertrack probe` sorts every
+  file by codec (Pi 4: H.264 8-bit and HEVC in hardware; MPEG-2, VC-1, AV1 and
+  H.264 10-bit in software). `lasertrack bench` plays samples on the real
+  output and counts dropped frames per decoder setting. Fixes for failing
+  files are chosen after seeing how many there are.
+- **Cartridges on composite play a Plex transcode (720x480, 2 Mbps).** The NAS
+  has hardware transcoding, and the Pi then never decodes a Blu-ray stream for
+  a cartridge, whatever its codec. HDMI direct-plays the file.
+- **Plex sign-in by plex.tv/link code.** No password typed on the Pi; the
+  token is in a 0600 file. The server is found by name through the account,
+  so its IP isn't hard-coded.
+- **Own RC522 driver.** The common Python libraries return only the first 4
+  bytes of a 7-byte NTAG215 UID. The driver does the full ISO 14443A select
+  and halts the tag after each read so the next poll wakes it again. Removal
+  needs 3 missed polls (~0.5 s) so a single missed read doesn't eject.
+- **RC522 on SPI0 CE0, reset on GPIO 25** (`electronics/rc522.md`). CE1 is
+  left for the LCD; GPIO 3 for the power button.
+- **Simulated reader** on the web page, so Plex playback can be tested before
+  the reader is wired.
+- **Composite is NTSC 480i** (`video=Composite-1:720x480@60ie`), assumed for a
+  North American CRT. `setup_pi.sh output` switches between composite and HDMI
+  until the DIP switch exists.
+
+## 2026-11-19 — Raw MKVs play on the Pi 4: measured, no re-encoding
+
+First run on the Pi (Pi 4 2 GB, Wi-Fi, composite 480i). `lasertrack probe`
+over the whole library (1,660 files): 1,238 H.264 1080p (median 26, max
+41 Mbps), 172 HEVC 10-bit **4K** (Seinfeld, Casper; median 66, max 86 Mbps),
+178 HEVC 10-bit SD (Golden Girls), 72 VC-1 1080p (3 films, The Office S5).
+Audio is mostly DTS-HD MA.
+
+`lasertrack bench` on the CRT showed every dropped frame was at the display,
+never the decoder: mpv's default high-quality scalers can't take 1080p/4K down
+to 480 lines on the Pi 4's GPU (25% dropped for H.264).
+
+- **`profile=fast` in `mpv.conf`** (cheap bilinear scaling): H.264 dropped
+  0%. At 480 lines the quality difference can't be seen.
+- **`hwdec=v4l2m2m-copy,drm`**: H.264 on the Pi's stateful decoder, HEVC
+  (including 4K 10-bit) zero-copy via `drm` (`drm-copy` dropped 43%, software
+  11%). VC-1 falls through to software.
+- **Result with that `mpv.conf`: 0% dropped in every group over Wi-Fi**,
+  including the 86 Mbps 4K file. VC-1 is marginal (0% and 1.8% in two runs)
+  and may stutter occasionally; `vd-lavc-skiploopfilter=all` is the next
+  lever if it does.
+- **So channels read the raw files** and the "no duplicate library" goal holds.
+  Supersedes the open question in `product.md` (Media).
+- **Plex is reached directly at `http://192.168.1.232:32400`.** Discovery
+  through plex.tv worked but tried dead addresses (Docker bridge, IPv6) for
+  about a minute first.
+- **FieldStation42's first catalog build is slow** over Wi-Fi: it ffprobes
+  each file one at a time for duration (~22 min for 1,660 files), then again
+  for chapters. Results are cached, so later rebuilds only see new files.
+
+## 2026-11-20 — First end-to-end run: channels and a cartridge on the CRT
+
+- **FS42 channels need a bump folder even when commercial-free.** It fills
+  the gap between a show's end and the next slot with bumps, and failed to
+  schedule (`KeyError: 'bump_dir'`) without one. `lasertrack fs42-setup` now
+  generates placeholder station-ID clips (colour bars with the channel name;
+  10, 30, 60 s) on the SD card, and sets `break_strategy: "end"` so all
+  filler comes after the show, never inside a film. Real bumps or commercials
+  can replace them; their look is not decided.
+- **Placeholder clips rather than FS42's "autobump".** Autobump renders a web
+  page through a browser engine, a heavy and untested dependency on a 2 GB Pi.
+- **FS42's schedule agent is on** (`main_config.json`: add a week when a day
+  is left). `--add_week` built only ~3.5 days.
+- **Channels verified:** channel 3 tuned to Interstellar at the scheduled
+  point, H.264 on the hardware decoder, 0 dropped frames, mpv ~83% of one
+  core. Audio goes to the 3.5 mm jack (PipeWire's default "Built-in Audio",
+  bcm2835 Headphones), so composite carries sound without extra setup.
+- **Cartridge verified (simulated tag):** insert → UNASSIGNED card and FS42
+  stopped → assign Casper from the web page → plays. Plex sends the 4K HEVC
+  film as 718x404 H.264 at ~1.3 Mbps (hardware decoded, 0 drops). Remove →
+  channels return.
+- **Plex ignores positions under 60 s** and keeps the previous one. A
+  cartridge pulled in its first minute doesn't move the saved position. This
+  is Plex's rule; no change needed.

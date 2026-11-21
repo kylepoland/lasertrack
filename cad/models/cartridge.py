@@ -13,8 +13,11 @@ the slot interface:
     rail in the slot and keys the cartridge label-forward;
   - two detent seats on the back face near the bottom edge, each with a
     shallow entry ramp, where the slot's ball plungers click in.
-Screws: every screw is equidistant from its two nearest edges (top pair: top
-edge and bevel; bottom pair: bottom edge and end, centred in the bottom bar).
+Screws: both rows sit in the middle of their band (between the top edge and
+the label, and between the label and the bottom edge), level with the text.
+The bottom pair is as far in from the end as from the bottom; the top pair
+sits further in, toward the logo. The logo is spaced out letter by letter so
+the slicer can lay walls between the letters.
 
 Print orientation: both halves face-down on the plate (front half: label face;
 back half: back face). Back half needs no support. Front half needs support
@@ -36,8 +39,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import numpy as np
 from build123d import (
-    Axis, Box, Circle, Compound, Cylinder, ExportSVG, Face, FontStyle, Plane,
-    Polyline, Pos, Rectangle, Text, Unit, chamfer, export_step, export_stl,
+    Align, Axis, Box, Circle, Compound, Cylinder, ExportSVG, Face, FontStyle, Plane,
+    Polyline, Pos, Rectangle, Text, Unit, Vector, chamfer, export_step, export_stl,
     extrude, fillet, make_face, offset,
 )
 
@@ -57,8 +60,8 @@ KEEP_R = BOSS_R + 0.3                                    # lip/rebate stop short
 BOTTOM_Y = -H / 2
 
 # Screw rows.
-TOP_SX, TOP_SY = L / 2 - p.TOP_SCREW_X_INSET, H / 2 - p.TOP_SCREW_INSET
-BOT_SX, BOT_SY = L / 2 - p.BOTTOM_SCREW_INSET, -H / 2 + p.BOTTOM_SCREW_INSET
+TOP_SX, TOP_SY = L / 2 - p.TOP_SCREW_X_INSET, H / 2 - p.SCREW_ROW_INSET
+BOT_SX, BOT_SY = L / 2 - p.BOTTOM_SCREW_INSET, -H / 2 + p.SCREW_ROW_INSET
 
 # Detent seat: a groove along X in the back face, centred above the ball.
 SEAT_Y = BOTTOM_Y + p.PLUNGER_HEIGHT + p.DETENT_SEAT_OFFSET
@@ -129,18 +132,39 @@ def yz_prism(pts, x0, x1):
 
 
 def text_lines():
-    return ((p.BRAND_TEXT, p.BRAND_TEXT_SIZE, TOP_SY), (p.BAR_TEXT, p.BAR_TEXT_SIZE, BOT_SY))
+    """(text, size, centre y, letter gap or None for the font's own spacing)."""
+    return ((p.BRAND_TEXT, p.BRAND_TEXT_SIZE, TOP_SY, p.BRAND_LETTER_GAP),
+            (p.BAR_TEXT, p.BAR_TEXT_SIZE, BOT_SY, None))
 
 
-def make_text(text, size):
-    return Text(text, font_size=size, font=p.TEXT_FONT, font_style=FontStyle.BOLD)
+def letter(ch, size):
+    """One glyph, left edge of its box at x = 0, baseline at y = 0."""
+    return Text(ch, font_size=size, font=p.TEXT_FONT, font_style=FontStyle.BOLD,
+                align=(Align.MIN, Align.NONE))
+
+
+def make_text(text, size, gap=None):
+    """Text centred on its box. With gap, letters are laid out one by one with
+    exactly that much space between neighbouring letter boxes."""
+    if gap is None:
+        return Text(text, font_size=size, font=p.TEXT_FONT, font_style=FontStyle.BOLD)
+    glyphs, x = [], 0.0
+    for ch in text:
+        g = letter(ch, size)
+        glyphs.append(Pos(x, 0) * g)
+        x += g.bounding_box().size.X + gap
+    out = glyphs[0]
+    for g in glyphs[1:]:
+        out += g
+    c = out.bounding_box().center()
+    return Pos(-c.X, -c.Y) * out
 
 
 def engraving():
     """Brand in the top band, cassette-style text in the bottom bar."""
     out = None
-    for text, size, ty in text_lines():
-        solid = prism(Pos(0, ty) * make_text(text, size), T - p.ENGRAVE_DEPTH, T)
+    for text, size, ty, gap in text_lines():
+        solid = prism(Pos(0, ty) * make_text(text, size, gap), T - p.ENGRAVE_DEPTH, T)
         out = solid if out is None else out + solid
     return out
 
@@ -218,14 +242,16 @@ def make_back():
     above = outline(p.WALL + p.LIP_CLEARANCE)   # anything rising past the seam stays inside this
 
     # Posts up to the joint. Below the seam they merge into the wall; above it
-    # they are clipped clear of the front half's wall. The bottom posts sit
-    # almost touching the walls, so webs join them to the corner (no sliver gap).
+    # they are clipped clear of the front half's wall. The posts sit almost
+    # touching the top/bottom walls (and the end, for the bottom pair), so webs
+    # join them to those walls (no sliver gap).
     posts = circles(POST_R)
+    r = p.SCREW_ROW_INSET
     webs = None
     for sx in (-1, 1):
-        x = sx * BOT_SX
-        w = (Pos(x + sx * p.BOTTOM_SCREW_INSET / 2, BOT_SY) * Rectangle(p.BOTTOM_SCREW_INSET, 2 * POST_R)
-             + Pos(x, BOT_SY - p.BOTTOM_SCREW_INSET / 2) * Rectangle(2 * POST_R, p.BOTTOM_SCREW_INSET))
+        w = (Pos(sx * BOT_SX + sx * r / 2, BOT_SY) * Rectangle(r, 2 * POST_R)
+             + Pos(sx * BOT_SX, BOT_SY - r / 2) * Rectangle(2 * POST_R, r)
+             + Pos(sx * TOP_SX, TOP_SY + r / 2) * Rectangle(2 * POST_R, r))
         webs = w if webs is None else webs + w
     back += prism(posts + webs, p.SKIN_BACK - 0.01, SPLIT_Z) & prism(outline(), 0, SPLIT_Z)
     back += prism(posts & above, SPLIT_Z - 0.01, JOINT_Z)
@@ -259,12 +285,14 @@ def make_back():
 
 # --- Checks and export ------------------------------------------------------
 
-def thin_stroke_fraction(text, size, res=0.02):
-    """Share of the engraved ink narrower than MIN_STROKE (morphological opening)."""
+def thin_stroke_fraction(text, size, gap=None, res=0.02):
+    """(share of the engraved ink narrower than MIN_STROKE, area of plastic between
+    strokes narrower than MIN_STROKE as a share of the ink) by morphological
+    opening and closing."""
     from matplotlib.path import Path as MPath
     from scipy import ndimage
 
-    t = make_text(text, size)
+    t = make_text(text, size, gap)
     bb = t.bounding_box()
     xs = np.arange(bb.min.X - 1, bb.max.X + 1, res)
     ys = np.arange(bb.min.Y - 1, bb.max.Y + 1, res)
@@ -281,7 +309,10 @@ def thin_stroke_fraction(text, size, res=0.02):
     r = p.MIN_STROKE / 2 / res
     n = int(math.ceil(r))
     yy, xx = np.ogrid[-n:n + 1, -n:n + 1]
-    return 1 - ndimage.binary_opening(ink, xx * xx + yy * yy <= r * r).sum() / ink.sum()
+    disk = xx * xx + yy * yy <= r * r
+    thin = 1 - ndimage.binary_opening(ink, disk).sum() / ink.sum()
+    narrow = (ndimage.binary_closing(ink, disk) & ~ink).sum() / ink.sum()
+    return thin, narrow
 
 
 def report(name, part):
@@ -310,26 +341,23 @@ def check(front, back):
     print(f"lip: {p.LIP_HEIGHT} high into {p.LIP_HEIGHT + p.LIP_TOP_GAP} rebate, "
           f"{p.LIP_CLEARANCE} clearance per side")
 
-    # Screw placement: each screw equidistant from its two nearest edges.
-    bevel_k = L / 2 + H / 2 - p.CART_TOP_CHAMFER
-    d_top, d_bevel = H / 2 - TOP_SY, (bevel_k - TOP_SX - TOP_SY) / 2 ** 0.5
-    d_bot, d_end = BOT_SY + H / 2, L / 2 - BOT_SX
-    lab = label_face().bounding_box()
-    bar_mid = (BOTTOM_Y + lab.min.Y) / 2
-    print(f"top screws at x +/-{TOP_SX:.2f}: {d_top:.2f} from top edge, {d_bevel:.2f} from bevel")
-    print(f"bottom screws at x +/-{BOT_SX:.2f}: {d_bot:.2f} from bottom, {d_end:.2f} from end; "
-          f"bar centre {bar_mid - BOTTOM_Y:.2f} above bottom")
-    assert abs(d_top - d_bevel) < 1e-6 and abs(d_bot - d_end) < 1e-6
+    # Screw placement: rows centred in their bands, bottom pair square to the corner.
+    lab_face = label_face()
+    lab = lab_face.bounding_box()
+    top_mid, bar_mid = (H / 2 + lab.max.Y) / 2, (BOTTOM_Y + lab.min.Y) / 2
+    print(f"top screws at x +/-{TOP_SX:.2f} ({L / 2 - TOP_SX:.2f} from the end), "
+          f"{H / 2 - TOP_SY:.2f} from top edge; band centre {H / 2 - top_mid:.2f} below top")
+    print(f"bottom screws at x +/-{BOT_SX:.2f}: {BOT_SY + H / 2:.2f} from bottom, "
+          f"{L / 2 - BOT_SX:.2f} from end; bar centre {bar_mid - BOTTOM_Y:.2f} above bottom")
+    assert abs(top_mid - TOP_SY) < 1e-6, "top screws not centred in the top band"
     assert abs(bar_mid - BOT_SY) < 1e-6, "bottom screws not centred in the bar"
-    gap_top = TOP_SY - p.COUNTERBORE_DIA / 2 - lab.max.Y
-    gap_bot = lab.min.Y - (BOT_SY + p.COUNTERBORE_DIA / 2)
-    print(f"label to counterbore: top {gap_top:.2f}, bottom {gap_bot:.2f} mm")
-    assert min(gap_top, gap_bot) >= p.LABEL_SCREW_CLEARANCE - 1e-6
-    # Bevel corner of the label vs top counterbore (distance between parallel bevel lines).
-    k_label = L / 2 + H / 2 - p.CART_TOP_CHAMFER - p.LABEL_BAND * 2 ** 0.5
-    d = (TOP_SX + TOP_SY - k_label) / 2 ** 0.5 - p.COUNTERBORE_DIA / 2
-    print(f"label bevel to top counterbore: {d:.2f} mm")
-    assert d >= p.LABEL_SCREW_CLEARANCE - 1e-6
+    bevel_k = L / 2 + H / 2 - p.CART_TOP_CHAMFER
+    rc = p.COUNTERBORE_DIA / 2
+    edges = {"top edge": H / 2 - TOP_SY - rc, "bevel": (bevel_k - TOP_SX - TOP_SY) / 2 ** 0.5 - rc,
+             "label": min(lab_face.distance_to(Vector(x, y)) for x, y in screw_positions()) - rc}
+    print("counterbore clearances: " + ", ".join(f"{k} {v:.2f}" for k, v in edges.items()) + " mm")
+    assert edges["label"] >= p.LABEL_SCREW_CLEARANCE - 1e-6, "counterbore too close to the label"
+    assert min(edges.values()) >= 2.0, "counterbore too close to an edge"
 
     # Face-down printing: features cut into the face must be whole layers.
     for name, depth in (("label recess", p.LABEL_DEPTH), ("engraving", p.ENGRAVE_DEPTH),
@@ -355,15 +383,20 @@ def check(front, back):
         clear = bb.min.Y > lab.max.Y or bb.max.Y < lab.min.Y
         side = TOP_SX if bb.center().Y > 0 else BOT_SX
         room = side - p.COUNTERBORE_DIA / 2 - bb.max.X
+        line_y = TOP_SY if bb.center().Y > 0 else BOT_SY
+        assert abs(bb.center().Y - line_y) < 0.3, "text line not centred on its screw row"
         print(f"engraving at y {bb.center().Y:+.1f} ({bb.size.X:.1f} x {bb.size.Y:.1f}): "
               f"{'clear of label' if clear else 'OVERLAPS LABEL'}, {room:.1f} mm to counterbores")
         assert clear, "engraving overlaps the label recess"
         assert room > 1.0, "engraving runs into the counterbores"
-    for text, size, _ in text_lines():
-        frac = thin_stroke_fraction(text, size)
+    for text, size, _, gap in text_lines():
+        frac, narrow = thin_stroke_fraction(text, size, gap)
         print(f"'{text}' {size} mm: {frac * 100:.0f}% of ink narrower than {p.MIN_STROKE:.2f} "
-              f"(limit {p.MAX_THIN_STROKE_FRACTION * 100:.0f}%)")
+              f"(limit {p.MAX_THIN_STROKE_FRACTION * 100:.0f}%); plastic between strokes "
+              f"narrower than {p.MIN_STROKE:.2f}: {narrow * 100:.1f}% of ink area")
         assert frac <= p.MAX_THIN_STROKE_FRACTION, f"'{text}' strokes too thin for the nozzle"
+        if gap is not None:
+            assert gap >= p.MIN_STROKE, "letter gap narrower than two walls"
 
     # Slot interface.
     behind_track = p.TRACK_PAD - p.TRACK_DEPTH
