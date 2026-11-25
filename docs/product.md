@@ -5,8 +5,9 @@ electronics direction added 2026-11-18. Cartridge and slot are modelled and
 printed (feel confirmed good, 2026-11-20). Set-top box first pass modelled
 2026-11-20 (`cad/models/box.py`), not printed.
 Software v1 running on the Pi since 2026-11-20: channels and Plex cartridges
-(simulated tag) verified on the CRT. No wiring is built (RC522 not yet
-connected).
+(simulated tag) verified on the CRT. The RC522 was wired and read real
+tags on 2026-11-21. 2026-11-24: NFC is being replaced by a cartridge PCB with contact
+pads and pogo pins in the slot; see `cartridge.md`.
 Items marked **Open** are not decided.
 
 ## What it is
@@ -29,8 +30,8 @@ feel of holding, inserting and watching a cartridge.
   first.
 
 Requirement: parts are portable between form factors. The cartridge receptacle
-in particular is a self-contained module (slot, NFC reader mount, any contact
-pins) with a defined mounting interface, so the same model drops into the box
+in particular is a self-contained module (slot, pogo pins and their
+board) with a defined mounting interface, so the same model drops into the box
 or the TV.
 
 ## Reference projects
@@ -60,7 +61,7 @@ Decided 2026-11-18 (option (a) of the three considered; see `decisions.md`).
 
 - **FieldStation42 runs the channels, unmodified.**
 - **A small LaserTrack daemon (Python) runs everything else**: it reads the
-  NFC reader, buttons, knob and IR receiver; switches between CHANNELS and
+  cartridge slot, buttons, knob and IR receiver; switches between CHANNELS and
   CARTRIDGE mode; plays cartridges with its own mpv; drives the small screen
   and on-screen text.
 - **The daemon owns all input.** The same button means different things per
@@ -106,7 +107,9 @@ Decided 2026-11-18 (option (a) of the three considered; see `decisions.md`).
   the Pi 4 plays the raw files (H.264, 4K HEVC, and VC-1 in software) with
   0% dropped frames on composite once `mpv.conf` uses `profile=fast` and
   `hwdec=v4l2m2m-copy,drm`. VC-1 (72 files) is marginal. See `decisions.md`.
-- **Open:** Ethernet or Wi-Fi; Kyle will try both.
+- **Open:** Ethernet or Wi-Fi. Measured 2026-11-21: the home Wi-Fi is
+  2.4 GHz only and can't carry 35–40 Mbit/s Blu-ray rips for channels
+  (stutters); Ethernet is needed unless channels change approach.
 
 ## Cartridge
 
@@ -117,12 +120,17 @@ Requirements:
 - The case carries a printed J-card.
 - Printed in two halves, top and bottom, screwed together.
 - Hex-socket screws visible on the top face as a design element.
-- NFC tag sealed inside.
+- A small PCB on the bottom edge with 6 gold contact pads spread along its
+  length (5V, GND, TX, RX, SWIO, 3V3) and a microcontroller that identifies the cartridge (2026-11-24,
+  replaces the NFC tag; see `cartridge.md`).
 - Optional internal weights for heft.
 - Internal ribs on both halves; the front ones stiffen the label face
   (2026-11-20).
-- Optional contact pins that take power from the box to light one or more
-  LEDs in the cartridge while it plays. Subtle, not distracting.
+- LEDs in the cartridge while it plays, powered and driven through the
+  contacts. Subtle, not distracting. They sit elsewhere in the cartridge,
+  wired to the PCB.
+- Room for later add-ons through connectors on the PCB, a small e-ink screen
+  in particular (2026-11-24).
 - Material: matte PLA, printed on the H2D.
 
 Measured (2026-11-17): Kyle's cases are 103 x 64 x 14 mm inside, with
@@ -132,20 +140,20 @@ pegless trays. The cartridge is 101 x 62 x 12.5 mm (see `decisions.md`).
   user. The J-card carries the portrait poster; the cartridge label is a
   landscape version.
 - M3 x 6 hex-socket screws, heads on the front (label) face.
-- Light effects through cartridge contacts and box pogo pins are wanted
-  later; not designed yet.
+- Contacts, PCB and lights: `cartridge.md`.
 
 **Open:**
 
-- ~~What a cartridge stores.~~ Decided 2026-11-18: only the tag's UID; the box
-  holds the UID-to-media table, so cartridges can be reassigned without
-  rewriting.
-- ~~NFC tag type.~~ Decided 2026-11-18: NTAG215 stickers (Kyle's existing
-  stock; read and written with the RC522 already). Sticker size to be measured.
+- ~~What a cartridge stores.~~ Decided 2026-11-18: only an ID (now the
+  chip's factory unique ID, 2026-11-24); the box holds the ID-to-media table,
+  so cartridges can be reassigned without rewriting.
+- ~~NFC tag type.~~ Decided 2026-11-18: NTAG215 stickers. Superseded
+  2026-11-24: no NFC; the cartridge PCB identifies it (`cartridge.md`).
 - Screw size and whether threads are heat-set inserts or cut into the plastic.
 - Weight material and target mass.
-- LED: whether to do it at all in V1; contact style (pogo pins on the box
-  against pads on the cartridge is the usual approach); colour and behaviour.
+- ~~LED contact style.~~ Decided 2026-11-24: Mill-Max pogo pins in the slot
+  floor against gold pads on the cartridge PCB. Still open: LED colour and
+  behaviour, and whether they are in V1.
 - ~~How the cartridge is retained and how insertion feels.~~ Decided
   2026-11-18: end tracks on rails, plus spring ball plungers clicking into
   seats on the back face (see `decisions.md`). Feel still to be tuned on a print.
@@ -183,8 +191,10 @@ Decided 2026-11-18 unless marked Open. Wiring goes in `electronics/` as pin maps
 | Part | Role | Notes |
 |---|---|---|
 | Raspberry Pi 4 (Kyle's) | Main board; runs FS42 and the daemon | 3.3 V logic. Only board in V1 |
-| RC522 NFC reader (Kyle's) | Reads cartridge tag UID | SPI, 3.3 V, wired straight to the Pi |
-| 1.54" 240×240 IPS LCD (ST7789, SPI) | Cover art and progress in cartridge mode; channel number in TV mode | LCD rather than OLED: no burn-in from a channel number shown for hours. Shares SPI with the RC522. Suggested: Adafruit product 3787 (not bought) |
+| ~~RC522 NFC reader (Kyle's)~~ | Retired 2026-11-24 once the cartridge PCB works | Replaced by the slot's pogo-pin board (`cartridge.md`) |
+| Slot pogo-pin board (custom PCB, 6× Mill-Max 0906) | Cartridge presence, ID, serial link, power and programming | Full-duplex 3.3 V UART to the Pi; 5 V and its own 3.3 V regulator feed the cartridge through load switches. See `cartridge.md` |
+| WCH-LinkE programmer | Flashes cartridge chips through the slot | USB to the Pi |
+| 1.54" 240×240 IPS LCD (ST7789, SPI) | Cover art and progress in cartridge mode; channel number in TV mode | LCD rather than OLED: no burn-in from a channel number shown for hours. Suggested: Adafruit product 3787 (not bought) |
 | 5 push buttons + EC11 rotary encoder with push | Controls above | |
 | IR receiver (TSOP38238) | Remote, later | Needs a window on the front panel |
 | Output-select switch | HDMI or composite, read at boot | Panel-mount mini toggle on the back panel (was a DIP switch; see `decisions.md`) |
@@ -193,11 +203,9 @@ Decided 2026-11-18 unless marked Open. Wiring goes in `electronics/` as pin maps
 | Back panel | Power jack, HDMI (panel extension), one 3.5 mm 4-pole AV jack (panel extension), Pi's own Ethernet/USB through a cutout | Kyle's AV cable splits video and stereo audio, so no RCA jacks (2026-11-20) |
 | 5 V 4 A barrel-jack supply (Mean Well GST25 series) | Power for everything | Panel 5.5 x 2.1 jack, then a short barrel-to-USB-C lead into the Pi (2026-11-20, replaces the official USB-C supply) |
 
-- **No microcontroller in V1.** A Raspberry Pi Pico is added later only if the
-  cartridge LEDs become colour effects (see `decisions.md` for why).
-- **NFC placement:** range drops near metal, and the slot's steel ball plungers
-  sit 30 mm either side of centre. Test-read through a printed cartridge and
-  slot before fixing the reader mount.
+- **No microcontroller in the box.** Superseded for cartridges 2026-11-24:
+  each cartridge carries a small WCH RISC-V chip that also drives its lights
+  (see `cartridge.md` and `decisions.md`). The box itself stays Pi only.
 
 ### Video output
 
@@ -221,8 +229,9 @@ First pass modelled 2026-11-20; details and reasons in `decisions.md`.
   volume knob, perforated air intake.
 - Back: power jack, HDMI, AV jack, output switch, Pi Ethernet/USB.
 - SD card: reached by removing the back top tile (four screws underneath).
-- **Open:** NFC read range through the slot (reader position is adjustable);
-  every bought part's real dimensions; how it looks and prints.
+- **Open:** the pogo-pin board and its mounting under the slot floor (replaces
+  the NFC reader mount); every bought part's real dimensions; how it looks and
+  prints.
 
 ## Scope
 

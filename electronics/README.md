@@ -19,3 +19,23 @@ Board: _name_ — logic level: _3.3 V / 5 V_ — powered from: _source_
 | 3.3 V | Pi's regulator (pins 1, 17) | RC522, screen logic, IR receiver | < 100 mA |
 
 Parts to buy for the box: `box-parts.md`.
+
+## Custom boards (KiCad)
+
+| Board | KiCad project | Pin map |
+|---|---|---|
+| Cartridge PCB (CH32V006, contact pads) | `cartridge_pcb/` | `cartridge_pcb.md` |
+| Slot PCB (pogo pins, power switching) | `slot_pcb/` | `slot_pcb.md` |
+
+Both schematics are generated from `tools/boards.py` (a netlist in Python;
+`tools/kicad_gen.py` writes the KiCad files). Edit `boards.py`, then:
+
+```bash
+python3 electronics/tools/boards.py
+/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli sch erc electronics/cartridge_pcb/cartridge_pcb.kicad_sch
+/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli sch erc electronics/slot_pcb/slot_pcb.kicad_sch
+```
+
+Project symbols and footprints (the CH32V006F8U6, the gold contact pad, the
+Mill-Max 0906 pin) are in `lib/`. Every net label on the schematic is a
+connection: two pins with the same label are joined.

@@ -12,6 +12,7 @@ from __future__ import annotations
 import logging
 import os
 import queue
+import time
 from pathlib import Path
 
 from python_mpv_jsonipc import MPV
@@ -41,7 +42,13 @@ class Player:
                 force_window=True,
                 input_default_bindings=False,  # the daemon owns all input
                 osc=False,
-                osd_font_size=48,
+                osd_font_size=40,
+                # CRTs overscan: keep text well inside the visible area
+                # (margins are in OSD pixels scaled to a 720-line screen).
+                osd_margin_x=72,
+                osd_margin_y=54,
+                osd_align_x="center",
+                osd_align_y="center",
                 keep_open=False,
             )
             self.mpv.bind_event("end-file", self._on_end_file)
@@ -62,12 +69,32 @@ class Player:
         if title:
             self.osd(f"▶ PLAY  {title}", 4)
 
-    def card(self, text: str) -> None:
-        """Black screen with a line of text (UNASSIGNED CARTRIDGE, END...)."""
+    def card(self, text: str = "") -> None:
+        """Black screen with an optional line of text, shown before returning.
+
+        Waits until mpv's window is actually on screen, so the caller can
+        then stop FieldStation42 without the desktop showing in between.
+        """
         mpv = self._start()
         mpv.command("set_property", "start", "none")
         mpv.command("loadfile", BLACK, "replace")
-        self.osd(text, 86400)
+        self.wait_visible()
+        if text:
+            self.osd(text, 86400)
+
+    def wait_visible(self, timeout_s: float = 5.0) -> bool:
+        end = time.monotonic() + timeout_s
+        while time.monotonic() < end:
+            if self.get("vo-configured"):
+                time.sleep(0.15)  # one more frame or two for the compositor
+                return True
+            time.sleep(0.05)
+        log.warning("mpv window not confirmed visible after %.1fs", timeout_s)
+        return False
+
+    @property
+    def running(self) -> bool:
+        return self.mpv is not None
 
     def osd(self, text: str, seconds: float) -> None:
         if self.mpv:

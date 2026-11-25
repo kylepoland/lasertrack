@@ -1,6 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=LaserTrack
-Comment=Hand the desktop session's display to systemd, then start the daemon
-Exec=sh -c "systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_RUNTIME_DIR XDG_SESSION_TYPE && systemctl --user start lasertrack.service"
-X-GNOME-Autostart-enabled=true

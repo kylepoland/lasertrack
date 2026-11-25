@@ -28,14 +28,23 @@ def test_seven_byte_uid_from_two_cascade_levels():
 
 
 def test_presence_tracker_debounces_removal():
-    t = PresenceTracker(remove_after_misses=3)
-    assert t.update("A") == ("tag_inserted", "A")
-    assert t.update("A") is None
-    assert t.update(None) is None  # one missed read while seated: still in
-    assert t.update("A") is None
-    assert [t.update(None) for _ in range(3)] == [None, None, ("tag_removed", None)]
-    assert t.update("B") == ("tag_inserted", "B")
-    assert t.update("C") == ("tag_inserted", "C")  # swapped without a gap
+    now = [0.0]
+    t = PresenceTracker(remove_after_s=1.0, clock=lambda: now[0])
+
+    def at(sec, uid):
+        now[0] = sec
+        return t.update(uid)
+
+    assert at(0.0, "A") == ("tag_inserted", "A")
+    # Seated tag missing reads in bursts, as seen on the Pi: never "removed".
+    assert [at(s, None) for s in (0.15, 0.3, 0.45, 0.6, 0.75)] == [None] * 5
+    assert at(0.9, "A") is None
+    # Pulled: removed once 1 s has passed since the last good read.
+    assert at(1.5, None) is None
+    assert at(1.95, None) == ("tag_removed", None)
+    assert at(2.1, None) is None
+    assert at(3.0, "B") == ("tag_inserted", "B")
+    assert at(3.1, "C") == ("tag_inserted", "C")  # swapped without a gap
 
 
 def test_classify():

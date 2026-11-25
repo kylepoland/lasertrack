@@ -197,6 +197,21 @@ class Rc522:
         except ValueError:
             return None
 
+    def antenna_cycle(self) -> None:
+        """Switch the RF field off and on. A tag loses power and restarts in its
+        idle state, which clears any half-finished exchange from a missed read."""
+        self.clear_bits(TxControlReg, 0x03)
+        time.sleep(0.005)
+        self.set_bits(TxControlReg, 0x03)
+        time.sleep(0.005)  # tag needs a few ms of field before it answers
+
+    def read_uid_retry(self) -> bytes | None:
+        uid = self.read_uid()
+        if uid is None:
+            self.antenna_cycle()
+            uid = self.read_uid()
+        return uid
+
     def close(self) -> None:
         self.clear_bits(TxControlReg, 0x03)
         self.spi.close()
@@ -205,27 +220,36 @@ class Rc522:
 
 
 class PresenceTracker:
-    """Turns a stream of poll results into inserted/removed transitions."""
+    """Turns a stream of poll results into inserted/removed transitions.
 
-    def __init__(self, remove_after_misses: int):
-        self.remove_after_misses = remove_after_misses
+    Removal is decided by time, not by a count of misses: the tag counts as
+    gone only when there has been no good read for `remove_after_s`. A seated
+    tag misses the odd read (seen 2026-11-21: three misses in a row every
+    second or two), and a count-based rule turned that into eject/insert
+    flapping.
+    """
+
+    def __init__(self, remove_after_s: float, clock=time.monotonic):
+        self.remove_after_s = remove_after_s
+        self.clock = clock
         self.current: str | None = None
+        self.last_seen = 0.0
+        self.reads = 0
         self.misses = 0
 
     def update(self, uid: str | None) -> tuple[str, str | None] | None:
+        now = self.clock()
         if uid is not None:
-            self.misses = 0
+            self.reads += 1
+            self.last_seen = now
             if uid != self.current:
                 # A different tag without a gap counts as remove + insert.
                 self.current = uid
                 return ("tag_inserted", uid)
             return None
-        if self.current is None:
-            return None
         self.misses += 1
-        if self.misses >= self.remove_after_misses:
+        if self.current is not None and now - self.last_seen >= self.remove_after_s:
             self.current = None
-            self.misses = 0
             return ("tag_removed", None)
         return None
 
@@ -243,15 +267,15 @@ class Rc522Poller(threading.Thread):
 
     def run(self) -> None:
         reader = None
-        tracker = PresenceTracker(self.cfg.remove_after_misses)
+        tracker = PresenceTracker(self.cfg.remove_after_s)
         while not self.stop_flag.is_set():
             try:
                 if reader is None:
                     reader = Rc522(self.cfg.spi_bus, self.cfg.spi_device, self.cfg.reset_gpio, self.cfg.rx_gain)
-                raw = reader.read_uid()
+                raw = reader.read_uid_retry()
                 ev = tracker.update(format_uid(raw) if raw else None)
                 if ev:
-                    log.info("NFC %s %s", *ev)
+                    log.info("NFC %s %s (reads %d, misses %d)", *ev, tracker.reads, tracker.misses)
                     self.events.put(ev)
             except Exception as e:
                 log.error("RC522 error: %s; retrying in 5 s", e)

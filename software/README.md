@@ -179,6 +179,10 @@ journalctl --user -u fs42 -f                 # FieldStation42 log
 systemctl --user restart lasertrack          # after a config change
 ```
 
+The Pi boots into a kiosk session: black screen, no desktop or taskbar,
+just the daemon and FieldStation42 (`~/.config/labwc/autostart`). To get the
+normal Pi desktop back, delete that file and reboot.
+
 ## Safety of the media files
 
 - **The Pi's connection** to the share is read-only: `ro` in the Pi's own

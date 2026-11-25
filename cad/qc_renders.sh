@@ -20,6 +20,27 @@ S=out/slot_section
 r slot_section_plunger ${S}_plunger_slot.stl ${S}_plunger_plunger.stl ${S}_plunger_front.stl ${S}_plunger_back.stl --focus 30,-24,2,22
 r slot_section_rail ${S}_rail_slot.stl ${S}_rail_plunger.stl ${S}_rail_front.stl ${S}_rail_back.stl --focus 48,-21,5,16 --view top
 
+# --- Cartridge with PCB, slot with pogo pins ---
+PCB="#2f7d4f"; GOLD="#d4af37"; PIN="#b8b8b8"
+r cartridge_pcb out/cartridge_pcb_front.stl out/cartridge_pcb_back.stl out/cartridge_pcb_board.stl@$PCB out/cartridge_pcb_pads.stl@$GOLD
+r cartridge_pcb_exploded out/cartridge_pcb_front.stl:20 out/cartridge_pcb_back.stl out/cartridge_pcb_board.stl:0,-15,0@$PCB out/cartridge_pcb_pads.stl:0,-15,0@$GOLD
+r cartridge_pcb_front_half out/cartridge_pcb_front.stl
+r cartridge_pcb_back_half out/cartridge_pcb_back.stl out/cartridge_pcb_board.stl@$PCB
+r cartridge_pcb_bottom out/cartridge_pcb_front.stl out/cartridge_pcb_back.stl out/cartridge_pcb_board.stl@$PCB out/cartridge_pcb_pads.stl@$GOLD --focus 0,-31,6.25,105 --view bottom
+r cartridge_pcb_bottom_end out/cartridge_pcb_front.stl out/cartridge_pcb_back.stl out/cartridge_pcb_board.stl@$PCB out/cartridge_pcb_pads.stl@$GOLD --focus 38,-31,6.25,22 --view bottom
+C=out/cartridge_pcb_section
+r cartridge_pcb_section_mid ${C}_mid_front.stl ${C}_mid_back.stl ${C}_mid_board.stl@$PCB --focus 0,-28,6.25,16
+r cartridge_pcb_section_seat ${C}_seat_front.stl ${C}_seat_back.stl ${C}_seat_board.stl@$PCB --focus 30,-27,6.25,16
+r cartridge_pcb_section_end ${C}_end_front.stl ${C}_end_back.stl ${C}_end_board.stl@$PCB --focus 40,-28,6.25,16
+r slot_pcb out/slot_pcb.stl --yup
+r slot_pcb_assembly out/slot_pcb.stl out/slot_pcb_plunger.stl out/slot_pcb_board.stl@$PCB out/slot_pcb_pins.stl@$PIN out/slot_pcb_screws.stl@$PIN out/cartridge_pcb_front.stl:0.2 out/cartridge_pcb_back.stl:0.2 out/cartridge_pcb_board.stl:0,0.2,0.2@$PCB --yup
+r slot_pcb_exploded out/slot_pcb.stl out/slot_pcb_board.stl:0,-15,0@$PCB out/slot_pcb_pins_free.stl:0,-15,0@$PIN out/slot_pcb_screws.stl:0,-25,0@$PIN out/cartridge_pcb_front.stl:0,45,0.2 out/cartridge_pcb_back.stl:0,45,0.2 --yup
+r slot_pcb_underside out/slot_pcb.stl out/slot_pcb_board.stl@$PCB out/slot_pcb_pins.stl@$PIN out/slot_pcb_screws.stl@$PIN --focus 0,-36,1,130 --view bottom
+P=out/slot_pcb_section
+r slot_pcb_section_pin ${P}_pin_slot.stl ${P}_pin_board.stl@$PCB ${P}_pin_pins.stl@$PIN ${P}_pin_front.stl ${P}_pin_back.stl ${P}_pin_pcb.stl@$PCB --focus 21,-31,4,24
+r slot_pcb_section_pin_close ${P}_pin_slot.stl ${P}_pin_board.stl@$PCB ${P}_pin_pins.stl@$PIN ${P}_pin_front.stl ${P}_pin_back.stl ${P}_pin_pcb.stl@$PCB --focus 21,-31.5,6.2,9
+r slot_pcb_section_screw ${P}_screw_slot.stl ${P}_screw_board.stl@$PCB ${P}_screw_screws.stl@$PIN ${P}_screw_front.stl ${P}_screw_back.stl --focus 14,-31,0,30
+
 # --- Box (Z up, front at -Y: pass --zup) ---
 O=out
 MINT="#8fd3bd"; TAN="#cfae7f"; LIME="#c6e83a"; WHITE="#f1f0ec"; ORANGE="#f0602c"; BLACK="#2a2a2a"
