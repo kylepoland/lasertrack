@@ -207,7 +207,10 @@ is drawn. Several jobs can also share pins (more I²C devices share the same
 two Qwiic wires; SPI devices share SCK/MOSI and need only their own CS). Pin
 assignments wait for the CH32V006 datasheet.
 
-Manufacture: JLCPCB with assembly, ENIG finish, matte black mask, tented vias.
+Manufacture: JLCPCB with assembly, 4 layers (1.6 mm), ENIG finish, matte black mask, tented vias.
+Layers: F.Cu signals and parts; In1 solid ground; In2 split power plane (+5V under
+the LED end, x < -6.5 mm; +3V3 under the rest); B.Cu the gold pads plus signals,
+free to route for looks. The slot board stays 2 layers.
 The estimate from 2026-11-21 was about $60–100 for 20 boards ($3–5 each),
 including US tariffs. A longer strip barely changes the price (JLCPCB's base
 price covers up to 100 × 100 mm). Get a live quote.
@@ -329,7 +332,7 @@ known failure point); a 2.54 mm pin strip (could bridge pads).
 
 ## Open
 
-- Routing the cartridge board (the slot board is routed, 2026-11-25), then
+- Routing the cartridge board, now 4 layers (the slot board is routed, 2026-11-25), then
   Gerbers, BOM and placement files for JLCPCB.
 - The slot PCB's Pi header pins hang 8.4 mm under the slot, plus dupont
   plugs: the box risers need about 15 mm, or switch to right-angle headers.

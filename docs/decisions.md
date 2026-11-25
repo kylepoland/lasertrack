@@ -739,3 +739,21 @@ Details in `cartridge.md`.
 - **`layout.py` now skips a board that already has tracks** (`--force`
   rebuilds it), so a rerun can't wipe hand routing. Routed boards take
   schematic changes through Update PCB from Schematic.
+
+## 2026-11-25 — Cartridge PCB goes to 4 layers
+
+- **Kyle tried routing the cartridge on 2 layers and it didn't fit.** On a
+  7.9 mm strip every layer has to carry signals, so the ground pours broke
+  into pieces that each needed stitching, and the pad side couldn't be
+  routed for looks without cutting the ground apart. The attempt was
+  deleted.
+- **4 layers, 1.6 mm thick** (so no CAD changes): F.Cu signals and parts,
+  In1 a solid ground plane, In2 a split power plane (+5V under the LED end,
+  x < -6.5 mm, where pad 1, the LED connectors and buffers are; +3V3 under
+  the rest, 0.5 mm gap), B.Cu the gold pads and signals. Ground and power
+  are one via each, which roughly halves the routing.
+- **No pours on the outer layers** of the cartridge, so there are no islands
+  to manage and the pad side is free for show routing under the black mask.
+- The slot board stays 2 layers; it's routed and has room.
+- To confirm: JLCPCB's price difference for 4 layers, in the cost
+  comparison before ordering.

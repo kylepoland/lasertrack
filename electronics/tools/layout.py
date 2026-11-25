@@ -15,8 +15,10 @@ screen and is the CAD z (thickness) less the board's centre line: +y is the
 front (label side, CAD +Z) on both boards, -y the back. Outline, pad and pin
 positions come from cad/params.py, so the boards match the CAD.
 
-Rules are JLCPCB's standard 2-layer process with margin: 0.15 mm clearance,
-0.2 mm tracks (0.4 mm power), 0.6/0.3 mm vias, tented.
+Rules are JLCPCB's standard process with margin: 0.15 mm clearance,
+0.2 mm tracks (0.4 mm power), 0.6/0.3 mm vias, tented. The slot board is
+2 layers (GND pours top and bottom); the cartridge is 4 layers: signals on
+the outer layers, solid GND on In1, split +5V / +3V3 plane on In2.
 Python 3.9 (KiCad's): no newer syntax here.
 """
 
@@ -84,6 +86,18 @@ CART_PLACE = {
 for i, x in enumerate(p.CPAD_X):
     CART_PLACE[f"TP{i + 1}"] = (x, 0.0, 0, "B")
 
+# Cartridge planes (4 layers): In1 is solid ground; In2 is split, +5V under
+# the LED end (pad 1, LED connectors and buffers, J5, U2, C3 by track) and
+# +3V3 under the rest. The outer layers have no pours: all signal, and the pad
+# side is free to route for looks.
+CART_SPLIT_X = -6.5     # In2 split between the 5 V and 3.3 V planes
+CART_SPLIT_GAP = 0.5
+CART_PLANES = [
+    ("GND", pcbnew.In1_Cu, None, None),
+    ("+5V", pcbnew.In2_Cu, None, CART_SPLIT_X - CART_SPLIT_GAP / 2),
+    ("+3V3", pcbnew.In2_Cu, CART_SPLIT_X + CART_SPLIT_GAP / 2, None),
+]
+
 # Slot board: x -42..42, y -9.3..9.3 (CAD z -8.3..10.3 -> y = z - 1.0). Pins on
 # top at the pad positions; everything else on the bottom (the top sits
 # against the slot's pocket ceiling). Screw heads (5.8 mm) under the board.
@@ -129,8 +143,8 @@ def outline(board, length, y0, y1, chamfer):
         board.Add(s)
 
 
-def rules(board):
-    board.SetCopperLayerCount(2)
+def rules(board, layers=2):
+    board.SetCopperLayerCount(layers)
     ds = board.GetDesignSettings()
     ds.m_MinClearance = mm(0.15)
     ds.m_TrackMinWidth = mm(0.15)
@@ -160,7 +174,10 @@ def add_text(board, text, x, y, layer, size=0.8):
     board.Add(t)
 
 
-def ground_zone(board, net, layer, length, y0, y1):
+def ground_zone(board, net, layer, length, y0, y1, x0=None, x1=None):
+    """A copper pour (GND, or a power plane) over the board, or over x0..x1."""
+    x0 = -length / 2 if x0 is None else x0
+    x1 = length / 2 if x1 is None else x1
     z = pcbnew.ZONE(board)
     z.SetLayer(layer)
     z.SetNet(net)
@@ -169,7 +186,7 @@ def ground_zone(board, net, layer, length, y0, y1):
     z.SetPadConnection(pcbnew.ZONE_CONNECTION_THERMAL)
     ol = z.Outline()
     ol.NewOutline()
-    for x, y in ((-length / 2, y0), (length / 2, y0), (length / 2, y1), (-length / 2, y1)):
+    for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1)):
         ol.Append(mm(CX + x), mm(CY + y))
     board.Add(z)
     return z
@@ -208,12 +225,14 @@ def routed(project):
     return out.exists() and len(pcbnew.LoadBoard(str(out)).GetTracks()) > 0
 
 
-def build(project, groups, place, length, y0, y1, chamfer, texts=(), zones=True, holes=()):
+def build(project, groups, place, length, y0, y1, chamfer, texts=(), zones=True, holes=(),
+          layers=2, planes=None):
+    """planes: [(net, layer, x0, x1)] copper pours. None = GND on both outer layers."""
     if routed(project) and "--force" not in sys.argv:
         print(f"{project}: already routed by hand, skipped (--force rebuilds it and loses the routing)")
         return None
     board = pcbnew.BOARD()
-    rules(board)
+    rules(board, layers)
     outline(board, length, y0, y1, chamfer)
     nets = {}
 
@@ -276,8 +295,10 @@ def build(project, groups, place, length, y0, y1, chamfer, texts=(), zones=True,
     for text, x, y, layer in texts:
         add_text(board, text, x, y, layer)
     if zones and "GND" in nets:
-        for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-            ground_zone(board, nets["GND"], layer, length, y0, y1)
+        if planes is None:
+            planes = [("GND", layer, None, None) for layer in (pcbnew.F_Cu, pcbnew.B_Cu)]
+        for name, layer, x0, x1 in planes:
+            ground_zone(board, nets[name], layer, length, y0, y1, x0, x1)
         pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     write_project_rules(project)
     out = ROOT / "electronics" / project / f"{project}.kicad_pcb"
@@ -290,7 +311,8 @@ if __name__ == "__main__":
     w = p.CPCB_WIDTH / 2
     build("cartridge_pcb", boards.cartridge_groups(), CART_PLACE, p.CPCB_LENGTH, -w, w,
           p.CPCB_CORNER_CHAMFER,
-          texts=[("LASERTRACK CART v1", 0.0, 3.4, pcbnew.F_Fab)])
+          texts=[("LASERTRACK CART v1", 0.0, 3.4, pcbnew.F_Fab)],
+          layers=4, planes=CART_PLANES)
     z0, z1 = p.SPCB_Z
     build("slot_pcb", boards.slot_groups(), SLOT_PLACE, p.SPCB_LENGTH, z0 - SLOT_ZC, z1 - SLOT_ZC,
           p.SPCB_CORNER_CHAMFER,
