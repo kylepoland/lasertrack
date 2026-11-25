@@ -22,3 +22,6 @@ fp-info-cache
 
 # macOS
 .DS_Store
+
+# KiCad local history snapshots
+.history/

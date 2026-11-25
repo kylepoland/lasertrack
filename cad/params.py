@@ -358,3 +358,64 @@ HDMI_X = -12.0                          # panel-mount HDMI extension (micro-HDMI
 HDMI_CUTOUT = (16.0, 7.0)               # NOMINAL; check the cable bought
 HDMI_EAR_SPAN = 28.0
 TOGGLE_X, TOGGLE_HOLE = -42.0, 6.2      # mini toggle: HDMI / composite, read at boot
+
+# --- Cartridge PCB and slot pogo pins (cartridge_pcb.py, slot_pcb.py) -------
+# Shared with the KiCad board outlines (electronics/tools/boards.py). Design
+# notes: docs/cartridge.md. Same cartridge frame as above (X length, Y up,
+# Z = 0 at the back face).
+# The board is clamped between the halves: lips under its long edges hold it
+# in, ledges over them take the pogo pins' push. In print (both halves face
+# down) the lips and ledges are walls in Y (whole lines) and every Z face is a
+# whole layer from the plate.
+CPCB_LENGTH = 81.0          # stops 0.5 short of the bottom screw posts' webs (x = +/-41.0)
+CPCB_WIDTH = 7.9            # JLCPCB outline tolerance is +/-0.2; pocket is 8.3
+CPCB_THICK = 1.6            # standard FR-4; +/-10 % from the fab
+CPCB_CORNER_CHAMFER = 1.0   # 45 deg on the four outline corners (Kyle); also clears the
+                            # printed pocket's slightly rounded inside corners
+CPCB_POCKET_Z = (9 * LAYER_HEIGHT, CART_THICKNESS - 12 * LAYER_HEIGHT)  # 1.8 .. 10.1
+CPCB_WINDOW_Z = (13 * LAYER_HEIGHT, CART_THICKNESS - 16 * LAYER_HEIGHT)  # 2.6 .. 9.3
+CPCB_END_CLEAR = 0.2        # board end to pocket end, each end
+CPCB_END_LIP = 1.0          # window stops this far inside the pocket ends
+CPCB_LIP = 2 * LINE_WIDTH   # 0.84: lip under the board; the pads sit this far up
+CPCB_GROOVE_PLAY = 0.2      # groove is this much taller than the board; the pins
+                            # push the board up against the ledges when seated
+CPCB_LEDGE = 3 * LINE_WIDTH # 1.26: ledge over the board, takes the pins' push
+CPCB_PART_KEEPOUT = 0.25    # parts on top stay this far inside the window line
+CPCB_PART_HEIGHT = 8.0      # envelope checked above the board: connector + plug
+
+# Contact pads: 6 along the length, gold, on the board's underside.
+CPAD_COUNT = 6
+CPAD_PITCH = 14.0
+CPAD_X = tuple((i - (CPAD_COUNT - 1) / 2) * CPAD_PITCH for i in range(CPAD_COUNT))  # -35 .. 35
+CPAD_SIZE = (3.0, 4.0)      # along X, across Z
+CPAD_NAMES = ("5V", "GND", "TX", "RX", "SWIO", "3V3")   # box side; TX = box -> cartridge
+
+# Pogo pins: Mill-Max 0906-2-15-20-75-14-11-0, from Mill-Max's drawing (Kyle's copy).
+POGO_LENGTH = 5.0           # flange underside to tip, uncompressed (0906-2)
+POGO_STROKE = 1.4           # max
+POGO_MID = 0.7              # rated working travel
+POGO_PLUNGER_DIA = 1.07
+POGO_BARREL_DIA = 1.63      # press ring; the barrel above it is 1.5
+POGO_FLANGE_DIA = 1.83
+POGO_BARREL_H = 2.69        # flange underside to barrel top
+POGO_TAIL = (0.43, 1.75)    # diameter, length below the flange
+POGO_HOLE_DIA = 2.2         # through the slot floor: flange + clearance
+
+# Slot PCB: screwed into a pocket in the slot's underside, pin flanges against
+# the pocket ceiling, parts on the underside. The pocket locates the board so
+# the pins line up with their floor holes.
+SPCB_LENGTH = 84.0
+SPCB_Z = (-8.3, 10.3)       # under the back wall (screws) to past the pins
+SPCB_THICK = 1.6
+SPCB_CORNER_CHAMFER = 1.0
+SPCB_POCKET_CLEAR = 0.2     # per side, in X and Z
+SPCB_POCKET_PLAY = 0.2      # pocket is this much deeper than the board
+SPCB_FLOOR = 16 * LAYER_HEIGHT   # 3.2: slot floor above the board; sets pin compression
+SPCB_SCREW_X = (-38.0, -14.0, 14.0, 38.0)   # M3 low pan heads up into the back wall
+SPCB_SCREW_Z = -4.8         # middle of the slot's back wall
+# 2.54 mm pin headers on the slot PCB's underside (to the Pi, to the WCH-LinkE).
+# Their pin tails stick ~1.3 mm out of the board's top, so the pocket ceiling
+# gets a relief groove over each row.
+SPCB_HEADERS = ((-7.62, 7), (21.5, 2))   # (x of pin 1, pin count), 2.54 mm pitch
+SPCB_HEADER_Z = 0.5                      # CAD z of both pin rows
+SPCB_HEADER_RELIEF = (2.6, 10 * LAYER_HEIGHT)   # groove width, depth (2.0) into the floor

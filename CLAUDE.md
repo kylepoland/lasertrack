@@ -1,15 +1,17 @@
 # LaserTrack
 
-A personal hardware project: a TV set-top box that accepts NFC cartridges.
-The box and the cartridges are 3D printed; the electronics are off-the-shelf
-dev boards (Arduino / ESP32 / Raspberry Pi) wired to breakout boards. No custom
-PCBs for now.
+A personal hardware project: a TV set-top box that accepts cartridges.
+The box and the cartridges are 3D printed. The box runs on a Raspberry Pi 4
+wired to breakout boards. Each cartridge carries a small custom PCB (KiCad,
+assembled by JLCPCB) with a microcontroller and gold pads that meet pogo pins in
+the slot floor; it replaced NFC on 2026-11-24. See `docs/cartridge.md`.
 
 It combines scheduled TV channels (like FieldStation42) with cartridges that
-play a specific movie, show or playlist (like 240-MP's NFC cards). The
-cartridge is the centrepiece and must fit a cassette case. Requirements and
-open questions are in `docs/product.md`; read it before design work. Do not
-invent requirements; ask.
+play a specific movie, show or playlist (like 240-MP's NFC cards, but with
+wired contacts). The cartridge is the centrepiece and must fit a cassette case.
+Requirements and open questions are in `docs/product.md`, and the cartridge
+electronics in `docs/cartridge.md`; read them before design work. Do not invent
+requirements; ask.
 
 ## Layout
 
@@ -18,8 +20,8 @@ invent requirements; ask.
 | `cad/` | build123d (Python) models. `params.py` holds every shared dimension. |
 | `firmware/` | PlatformIO project (not created yet). |
 | `software/` | Python for the Raspberry Pi: the LaserTrack daemon, Pi setup scripts. See its README. |
-| `electronics/` | Pin-map tables in Markdown; KiCad only if a circuit outgrows a table. |
-| `docs/` | `product.md` is the product brief; `decisions.md` logs what was decided and why. |
+| `electronics/` | Pin-map tables in Markdown for the box wiring; KiCad projects for the cartridge PCB and slot pogo-pin board. |
+| `docs/` | `product.md` is the product brief; `cartridge.md` the cartridge PCB, pads and pogo pins; `decisions.md` logs what was decided and why. |
 | `vendor/` | Downloaded STEP models and datasheets for bought parts. |
 
 ## CAD basics
@@ -43,7 +45,18 @@ uv sync                                   # install Python 3.12 + build123d
 uv run python models/cartridge.py         # build one model
 uv run python models/slot.py              # slot (imports and checks against the cartridge)
 uv run python models/box.py               # set-top box (imports the slot and cartridge; ~15 s)
+uv run python models/cartridge_pcb.py     # cartridge with the contact PCB (successor to cartridge.py)
+uv run python models/slot_pcb.py          # slot with pogo pins and the slot PCB (successor to slot.py)
 ```
+
+The PCBs are KiCad projects in `electronics/`, generated from
+`electronics/tools/boards.py` (`python3 electronics/tools/boards.py`, then
+`kicad-cli sch erc` on each schematic). Placement is generated too, with
+KiCad's own Python: `electronics/tools/layout.py` (see its docstring), then
+`kicad-cli pcb drc`. After exporting each board to STEP,
+`uv run python models/pcb_fit.py` checks the boards, parts included, against
+the printed parts. Board sizes shared with the CAD live in `params.py`
+(`CPCB_*`, `SPCB_*`, `CPAD_*`, `POGO_*`).
 
 The box build fails if any two parts overlap, printed or bought (bought
 parts are modelled as stand-ins: Pi, screen, button board, encoder, reader,
