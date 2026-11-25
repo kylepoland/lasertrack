@@ -722,3 +722,20 @@ Details in `cartridge.md`.
   headers hang 8.4 mm below the slot: the box needs taller risers.
 - **Ground pours on both layers of both boards.** On the cartridge's bottom
   they sit under the black mask between the gold pads.
+
+## 2026-11-25 — Slot PCB routed
+
+- **Kyle routes the boards by hand in KiCad** instead of an autorouter, to
+  learn it. The slot board is done: 0.5 mm tracks for power (and the
+  PWR_EN, CT and QOD control lines; wide does no harm there), 0.2 mm for
+  signals, 0.6/0.3 mm vias. DRC: 0 violations, 0 unconnected, matches the
+  schematic. Its STEP still fits the slot with zero overlap.
+- **Ground stitching vias** (13) near U1 and U2, beside the signal vias and
+  along the edges tie the top and bottom pours together. Both pours stay one
+  piece each.
+- **Small parts moved while routing** (C1, C2, C3, C5, R7); the pogo pins,
+  screw holes and headers stay where the CAD puts them. Decoupling caps are
+  within about 4 mm of their chips.
+- **`layout.py` now skips a board that already has tracks** (`--force`
+  rebuilds it), so a rerun can't wipe hand routing. Routed boards take
+  schematic changes through Update PCB from Schematic.

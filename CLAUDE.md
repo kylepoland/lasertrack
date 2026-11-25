@@ -53,7 +53,9 @@ The PCBs are KiCad projects in `electronics/`, generated from
 `electronics/tools/boards.py` (`python3 electronics/tools/boards.py`, then
 `kicad-cli sch erc` on each schematic). Placement is generated too, with
 KiCad's own Python: `electronics/tools/layout.py` (see its docstring), then
-`kicad-cli pcb drc`. After exporting each board to STEP,
+`kicad-cli pcb drc`. Routing is done by hand in KiCad (Kyle routes), so
+`layout.py` skips any board that already has tracks; change a routed board's
+parts with Update PCB from Schematic, never by rebuilding it. After exporting each board to STEP,
 `uv run python models/pcb_fit.py` checks the boards, parts included, against
 the printed parts. Board sizes shared with the CAD live in `params.py`
 (`CPCB_*`, `SPCB_*`, `CPAD_*`, `POGO_*`).

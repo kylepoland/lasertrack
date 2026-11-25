@@ -4,7 +4,10 @@ Run with KiCad's own Python (it has the pcbnew module), from the repo root:
   /Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/3.9/bin/python3 \
       electronics/tools/layout.py
 Writes electronics/cartridge_pcb/cartridge_pcb.kicad_pcb and
-electronics/slot_pcb/slot_pcb.kicad_pcb. Routing is not done here.
+electronics/slot_pcb/slot_pcb.kicad_pcb. Routing is not done here: it is done
+by hand in KiCad, so a board that already has tracks is skipped (pass --force
+to rebuild it and lose them). Change a routed board's parts with
+Tools > Update PCB from Schematic instead.
 
 Board coordinates (mm): the board centre is at (150, 100). x is the CAD x
 (along the cartridge, same pad positions as cad/params.py). y points down on
@@ -200,7 +203,15 @@ def write_project_rules(project):
         tbl.write_text(t.rstrip().rstrip(")") + row + ")\n")
 
 
+def routed(project):
+    out = ROOT / "electronics" / project / f"{project}.kicad_pcb"
+    return out.exists() and len(pcbnew.LoadBoard(str(out)).GetTracks()) > 0
+
+
 def build(project, groups, place, length, y0, y1, chamfer, texts=(), zones=True, holes=()):
+    if routed(project) and "--force" not in sys.argv:
+        print(f"{project}: already routed by hand, skipped (--force rebuilds it and loses the routing)")
+        return None
     board = pcbnew.BOARD()
     rules(board)
     outline(board, length, y0, y1, chamfer)

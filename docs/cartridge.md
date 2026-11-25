@@ -329,8 +329,8 @@ known failure point); a 2.54 mm pin strip (could bridge pads).
 
 ## Open
 
-- Routing both boards (placement done, see `electronics/tools/layout.py`),
-  then Gerbers, BOM and placement files for JLCPCB.
+- Routing the cartridge board (the slot board is routed, 2026-11-25), then
+  Gerbers, BOM and placement files for JLCPCB.
 - The slot PCB's Pi header pins hang 8.4 mm under the slot, plus dupont
   plugs: the box risers need about 15 mm, or switch to right-angle headers.
 - JLCPCB stock and LCSC numbers for every part (only the CH32V006F8U6,
