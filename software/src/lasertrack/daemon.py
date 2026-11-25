@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import logging
 import queue
+import subprocess
 import threading
 import time
 from dataclasses import dataclass, field
@@ -27,6 +28,31 @@ from .player import Player
 from .plex import PlayItem, PlexPlayback
 
 log = logging.getLogger(__name__)
+
+# The Pi has no battery-backed clock: it boots on the last saved time and
+# jumps to the real time when NTP syncs. FieldStation42 schedules by the clock,
+# so channels must not start before that.
+CLOCK_WAIT_S = 120
+
+
+def clock_synced() -> bool:
+    try:
+        r = subprocess.run(
+            ["timedatectl", "show", "-p", "NTPSynchronized", "--value"],
+            capture_output=True, text=True, timeout=5,
+        )
+        return r.stdout.strip() == "yes"
+    except Exception:
+        return True  # can't tell: don't block channels forever
+
+
+def wait_for_clock_sync(timeout_s: float) -> bool:
+    end = time.monotonic() + timeout_s
+    while time.monotonic() < end:
+        if clock_synced():
+            return True
+        time.sleep(2)
+    return clock_synced()
 
 
 @dataclass
@@ -88,15 +114,26 @@ class Daemon:
 
     # --- mode changes --------------------------------------------------------------
     def to_channels(self) -> None:
+        """Back to FieldStation42 without the desktop showing in between.
+
+        Our window goes black and stays on top while FS42 starts; it closes
+        only once FS42's own window is up and playing.
+        """
         if self.item:
             self.report("stopped")
-        self.player.quit()
         self.cart, self.items, self.item = None, [], None
         self.status.mode, self.status.cartridge, self.status.now_playing = "CHANNELS", None, None
-        fs42.start(self.cfg.fs42.service)
+        if self.player.running:
+            self.player.card()  # plain black while the channel tunes in
+        if not fs42.is_active(self.cfg.fs42.service):
+            fs42.start(self.cfg.fs42.service)
+            fs42.wait_on_screen(self.cfg.fs42.path)
+        self.player.quit()
         self.note("Channels")
 
-    def leave_channels(self) -> None:
+    def leave_channels(self, card_text: str = "") -> None:
+        """Put our window on screen first, then stop FS42 underneath it."""
+        self.player.card(card_text)
         if fs42.is_active(self.cfg.fs42.service):
             fs42.stop(self.cfg.fs42.service)
 
@@ -123,16 +160,15 @@ class Daemon:
         self.status.uid = self.status.last_uid = uid
         self.status.error = None
         cart = self.store.get(uid)
-        self.leave_channels()
         if cart is None:
+            self.leave_channels("UNASSIGNED CARTRIDGE")
             self.cart = None
             self.status.mode = "UNASSIGNED"
-            self.player.card("UNASSIGNED CARTRIDGE")
             self.note(f"Unassigned cartridge {uid}")
             return
+        self.leave_channels("LOADING…")
         self.cart = cart
         self.status.mode, self.status.cartridge = "CARTRIDGE", cart.__dict__
-        self.player.card("LOADING…")
         self.note(f"Cartridge {uid}: {cart.title}")
         try:
             self.items = self.plex._queue(cart)
@@ -207,8 +243,18 @@ class Daemon:
             Rc522Poller(self.cfg.nfc, self.events).start()
         else:
             self.note("NFC reader: simulated (web page only)")
+        clock_ok = wait_for_clock_sync(CLOCK_WAIT_S)
+        self.note("Clock synced" if clock_ok else f"Clock not synced after {CLOCK_WAIT_S}s; starting anyway")
         self.to_channels()
         while True:
+            if not clock_ok and clock_synced():
+                # FS42 tuned on a wrong clock and would stay in a stale slot
+                # (seen 2026-11-21): restart it now the time is right.
+                clock_ok = True
+                self.note("Clock synced late; restarting channels")
+                if self.status.mode == "CHANNELS":
+                    fs42.stop(self.cfg.fs42.service)
+                    fs42.start(self.cfg.fs42.service)
             try:
                 kind, arg = self.events.get(timeout=1.0)
                 self.handle(kind, arg)

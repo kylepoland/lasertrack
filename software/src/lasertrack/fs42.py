@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import subprocess
+import time
 from pathlib import Path
 
 from .config import Config
@@ -37,6 +38,46 @@ def stop(service: str) -> None:
 
 def is_active(service: str) -> bool:
     return _systemctl("is-active", "--quiet", service).returncode == 0
+
+
+def _mpv_get(sock: Path, prop: str):
+    import socket
+
+    s = socket.socket(socket.AF_UNIX)
+    s.settimeout(1.0)
+    try:
+        s.connect(str(sock))
+        s.sendall((json.dumps({"command": ["get_property", prop]}) + "\n").encode())
+        buf = b""
+        while b"\n" not in buf:
+            chunk = s.recv(4096)
+            if not chunk:
+                break
+            buf += chunk
+        for line in buf.split(b"\n"):
+            if b'"error"' in line:
+                return json.loads(line).get("data")
+    except OSError:
+        return None
+    finally:
+        s.close()
+
+
+def wait_on_screen(fs42_dir: Path, timeout_s: float = 20.0) -> bool:
+    """Wait until FS42's mpv window is up and showing video.
+
+    Used on cartridge removal: our player stays on top until this returns,
+    so the desktop never shows while FS42 starts.
+    """
+    sock = fs42_dir / "runtime" / "mpv.socket"
+    end = time.monotonic() + timeout_s
+    while time.monotonic() < end:
+        if _mpv_get(sock, "vo-configured") and _mpv_get(sock, "time-pos") is not None:
+            time.sleep(0.3)
+            return True
+        time.sleep(0.2)
+    log.warning("FieldStation42 not on screen after %.0fs", timeout_s)
+    return False
 
 
 BUMP_TAG = "bump"
@@ -93,6 +134,32 @@ def channel_conf(name: str, number: int, content_dir: str, tags: list[str]) -> d
     for day in DAYS:
         conf[day] = dict(hours)
     return {"station_conf": conf}
+
+
+def configure_main(fs42_dir: Path) -> Path:
+    """Settings in FS42's main_config.json (its api_key is left alone).
+
+    - standby_image: black instead of the FS42 logo, shown while the player
+      starts; with the daemon's handover the logo would otherwise flash up
+      every time a cartridge is removed.
+    - schedule_agent: extend schedules a week at a time when a day is left;
+      --add_week alone built only ~3.5 days.
+    """
+    black = fs42_dir / "runtime" / "lt_black.png"
+    if not black.exists():
+        black.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(
+            ["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=black:s=720x480",
+             "-frames:v", "1", str(black)],
+            check=True,
+        )
+    path = fs42_dir / "confs" / "main_config.json"
+    conf = json.loads(path.read_text()) if path.exists() else {}
+    conf["standby_image"] = "runtime/lt_black.png"
+    conf.setdefault("schedule_agent", {"trigger_add_at": "day", "amount_to_add": "week"})
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(conf, indent=2))
+    return path
 
 
 def setup_channels(cfg: Config, dry_run: bool = False) -> list[Path]:

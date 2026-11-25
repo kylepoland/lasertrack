@@ -1,0 +1,15 @@
+# LaserTrack kiosk session, installed to ~/.config/labwc/autostart by
+# setup_pi.sh. It replaces /etc/xdg/labwc/autostart, so the Pi OS desktop
+# (pcmanfm-pi) and taskbar (wf-panel-pi) don't start: whenever no video
+# window is up, the screen is plain black, like a TV between channels.
+# To get the normal desktop back: rm ~/.config/labwc/autostart and reboot.
+
+# Display layout tool from the stock autostart; harmless to keep.
+/usr/bin/kanshi &
+
+# Black background (if swaybg is installed; labwc alone shows its default).
+command -v swaybg >/dev/null && swaybg -c '#000000' &
+
+# Hand the session's display to systemd, then start the daemon (which starts
+# FieldStation42 once the clock has synced).
+sh -c "systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_RUNTIME_DIR XDG_SESSION_TYPE && systemctl --user start lasertrack.service" &

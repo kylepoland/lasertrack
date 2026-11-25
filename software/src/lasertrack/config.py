@@ -43,9 +43,10 @@ class NfcConfig:
     spi_device: int = 0  # CE0; the LCD will take CE1 later
     reset_gpio: int = 25
     poll_interval_s: float = 0.15
-    # Consecutive empty polls before the cartridge counts as removed. A tag can
-    # miss one read while it is moving; three misses is about half a second.
-    remove_after_misses: int = 3
+    # Seconds without a good read before the cartridge counts as removed. A
+    # seated tag misses the odd read; 1 s rides through that and still feels
+    # immediate when the cartridge is pulled.
+    remove_after_s: float = 1.0
     # Receiver gain 0-7 (7 = 48 dB, the maximum). Raise if reads through the
     # cartridge shell are flaky.
     rx_gain: int = 7

@@ -93,7 +93,9 @@ def main(argv: list[str] | None = None) -> None:
 
         if not cfg.channels:
             sys.exit("No [[channels]] in config.toml.")
-        for p in setup_channels(cfg):
+        from .fs42 import configure_main
+
+        for p in setup_channels(cfg) + [configure_main(cfg.fs42.path)]:
             print(f"wrote {p}")
         if not args.no_build:
             py = str(cfg.fs42.path / "env" / "bin" / "python3")
@@ -107,23 +109,32 @@ def main(argv: list[str] | None = None) -> None:
         from .nfc import PresenceTracker, Rc522, format_uid
 
         r = Rc522(cfg.nfc.spi_bus, cfg.nfc.spi_device, cfg.nfc.reset_gpio, cfg.nfc.rx_gain)
-        tracker = PresenceTracker(cfg.nfc.remove_after_misses)
+        tracker = PresenceTracker(cfg.nfc.remove_after_s)
         print("Hold a tag to the reader (Ctrl-C to stop).")
         end = time.monotonic() + args.seconds if args.seconds else None
-        reads = misses = 0
+        # Count single reads (no retry) too, to see the reader's raw miss rate.
+        first_ok = first_miss = 0
         try:
             while end is None or time.monotonic() < end:
                 raw = r.read_uid()
-                reads += raw is not None
-                misses += raw is None
+                if tracker.current is not None:
+                    first_ok += raw is not None
+                    first_miss += raw is None
+                if raw is None:
+                    r.antenna_cycle()
+                    raw = r.read_uid()
                 ev = tracker.update(format_uid(raw) if raw else None)
                 if ev:
-                    print(ev[0], ev[1] or "", f"(reads {reads}, misses {misses})")
+                    print(ev[0], ev[1] or "")
                 time.sleep(cfg.nfc.poll_interval_s)
         except KeyboardInterrupt:
             pass
         finally:
             r.close()
+        n = first_ok + first_miss
+        if n:
+            print(f"While a tag was present: first-try reads {first_ok}/{n} "
+                  f"({100 * first_ok / n:.0f}%); with retry, misses {tracker.misses}")
 
 
 if __name__ == "__main__":

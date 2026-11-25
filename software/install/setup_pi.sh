@@ -29,7 +29,7 @@ step_base() {
   say "apt packages"
   sudo apt-get update
   sudo apt-get install -y mpv ffmpeg cifs-utils git rsync \
-    python3-venv python3-pip python3-spidev python3-gpiozero python3-lgpio
+    python3-venv python3-pip python3-spidev python3-gpiozero python3-lgpio swaybg
   say "SPI on (RC522), screen blanking off, boot to desktop with autologin"
   sudo raspi-config nonint do_spi 0
   sudo raspi-config nonint do_blanking 1
@@ -105,9 +105,13 @@ step_app() {
   fi
   cp "$APP_DIR/config/mpv.conf" "$HOME/.config/mpv/mpv.conf"
   say "Services"
-  mkdir -p "$HOME/.config/systemd/user" "$HOME/.config/autostart"
+  mkdir -p "$HOME/.config/systemd/user" "$HOME/.config/labwc"
   cp "$APP_DIR"/install/systemd/*.service "$HOME/.config/systemd/user/"
-  cp "$APP_DIR/install/lasertrack.desktop" "$HOME/.config/autostart/"
+  # Kiosk session: this file replaces Pi OS's /etc/xdg/labwc/autostart, so
+  # no desktop or taskbar starts, only a black background and the daemon.
+  # Delete ~/.config/labwc/autostart (and reboot) to get the desktop back.
+  cp "$APP_DIR/install/labwc-autostart" "$HOME/.config/labwc/autostart"
+  rm -f "$HOME/.config/autostart/lasertrack.desktop"  # older install method
   systemctl --user daemon-reload
   echo "Installed. They start with the desktop session after a reboot."
 }

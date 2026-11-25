@@ -6,7 +6,10 @@ Description=FieldStation42 player
 
 [Service]
 WorkingDirectory=%h/FieldStation42
-ExecStart=%h/FieldStation42/env/bin/python3 field_player.py
+# -t none: no "bad reception" effect on channel change. FS42's default draws
+# static with a per-pixel CPU filter over full 1080p frames, which the Pi 4
+# can't keep up with (stutter and garbled frames, 2026-11-21).
+ExecStart=%h/FieldStation42/env/bin/python3 field_player.py -t none
 Restart=on-failure
 RestartSec=5
 # Stopping must also end FS42's mpv and API server (same cgroup).
