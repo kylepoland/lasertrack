@@ -757,3 +757,26 @@ Details in `cartridge.md`.
 - The slot board stays 2 layers; it's routed and has room.
 - To confirm: JLCPCB's price difference for 4 layers, in the cost
   comparison before ordering.
+
+## 2026-11-25 — Autorouting the cartridge PCB
+
+- **Kyle's hand routing was kept** (committed as is) and an autorouted copy
+  made beside it: `cartridge_pcb_autoroute.kicad_pcb`, with Kyle's part moves
+  (C3 to the LED end, C6 by the flash) and his widths: signals 0.2, +3V3 0.25,
+  +5V and GND 0.3 mm (now net classes in that copy's project).
+- **Freerouting 2.5.0** (free, open source), run from the command line with
+  Homebrew's Java. On its own it routed every signal but left all ground and
+  power pins unconnected: it found no room for the vias to the planes. A
+  script now places those stubs first (42 of 45 pins; the three exceptions are
+  J5's +3V3 and U2's +5V, over the wrong half of In2, and U1's centre pad,
+  joined to pin 4 by a 0.2 mm track) and Freerouting routes around them.
+  Steps in `electronics/tools/autoroute/README.md`.
+- **Result: 5 connections left to finish by hand** (U2 +5V, DISP_BUSY,
+  DISP_RST, CART_RX, PAD_SWIO, all around the microcontroller), 0 rule
+  violations apart from two stub ends of those nets. The board still fits the
+  shell with zero overlap.
+- **That copy uses 0.45 / 0.2 mm vias** instead of 0.6 / 0.3: at the same
+  settings the bigger via left 11 connections instead of 5. JLCPCB's
+  capabilities page lists no surcharge for a 0.2 mm hole when the via is at
+  least 0.45 mm across (checked 2026-11-25). Kyle's call whether to keep it;
+  confirm with JLCPCB's DFM check before ordering.
