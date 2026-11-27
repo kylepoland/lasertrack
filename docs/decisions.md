@@ -780,3 +780,19 @@ Details in `cartridge.md`.
   capabilities page lists no surcharge for a 0.2 mm hole when the via is at
   least 0.45 mm across (checked 2026-11-25). Kyle's call whether to keep it;
   confirm with JLCPCB's DFM check before ordering.
+
+## 2026-11-27 — Pi web pages listen on IPv4 and IPv6
+
+- **Both web servers bind host `""`** (one IPv4 and one IPv6 socket): the
+  LaserTrack page (default in `software/src/lasertrack/config.py`) and
+  FieldStation42 (`"server_host": ""` in its `confs/main_config.json` on the
+  Pi; a supported setting, so FS42 stays unmodified). Before, both bound
+  `0.0.0.0` (IPv4 only), and `lasertrack.local` resolves to an IPv6 address
+  first, so Kyle's phone couldn't open either page while the Mac (which falls
+  back to IPv4) could. `"::"` was tried first and is IPv6 only: asyncio sets
+  `IPV6_V6ONLY` on it, whatever the Linux default.
+- **Pi unreachable while channels still play** (it reaches the wired NAS):
+  on 2026-11-27, after the U7 Pro Outdoor AP's 8.8.14 firmware update, Wi-Fi
+  clients on that AP couldn't reach each other. Restarting the AP fixed it;
+  roll the firmware back if it returns. The FS42 page on :4242 asks for the
+  `api_key` from its `main_config.json`.

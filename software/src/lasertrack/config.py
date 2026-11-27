@@ -54,7 +54,10 @@ class NfcConfig:
 
 @dataclass
 class WebConfig:
-    host: str = "0.0.0.0"
+    # "" binds one IPv4 and one IPv6 socket. "0.0.0.0" is IPv4 only, so
+    # phones that try lasertrack.local's IPv6 address first fail; "::" is
+    # IPv6 only, because asyncio sets IPV6_V6ONLY on it.
+    host: str = ""
     port: int = 8080
 
 
