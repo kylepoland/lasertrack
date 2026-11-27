@@ -1,7 +1,8 @@
 # Autorouting the cartridge PCB with Freerouting
 
-Used on 2026-11-25 to produce `electronics/cartridge_pcb/cartridge_pcb_autoroute.kicad_pcb`
-(see `docs/decisions.md`). Freerouting alone left every ground and power pin
+Used on 2026-11-25 to produce `cartridge_pcb_autoroute.kicad_pcb`, which Kyle
+finished by hand and which became `electronics/cartridge_pcb/cartridge_pcb.kicad_pcb`
+on 2026-11-26 (see `docs/decisions.md`). Freerouting alone left every ground and power pin
 unconnected (it found no room for the plane vias), so the stubs to the planes
 are placed first, by script, and locked; Freerouting then routes the signals.
 

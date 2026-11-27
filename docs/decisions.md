@@ -780,6 +780,34 @@ Details in `cartridge.md`.
   capabilities page lists no surcharge for a 0.2 mm hole when the via is at
   least 0.45 mm across (checked 2026-11-25). Kyle's call whether to keep it;
   confirm with JLCPCB's DFM check before ordering.
+- **Kept (Kyle, 2026-11-26): 0.45 / 0.2 mm vias on the cartridge PCB.** Still
+  run JLCPCB's DFM check on the Gerbers before ordering.
+
+## 2026-11-26 — Cartridge PCB routed; first JLCPCB quote
+
+- **Kyle finished the autorouted copy by hand** and it became the board:
+  `cartridge_pcb_autoroute.*` renamed to `cartridge_pcb.*` (his partial hand
+  routing is in git at 85264c0). DRC 0 violations, 0 unconnected after a zone
+  refill; fit check 0 overlap.
+- **J5's pad nets differ from the schematic** (changed during hand routing):
+  the board has 1 PD5/MISO, 2 PD7, 3 PA2, 4 +3V3, 5 +5V, 6 GND. Until the
+  schematic matches, never run Update PCB from Schematic on this board.
+- **JLCPCB files come from `electronics/tools/fab.py`** (Gerber zip, BOM,
+  CPL, settings from JLCPCB's KiCad guide) into `electronics/cartridge_pcb/fab/`.
+  Only U1 has an LCSC number so far.
+- **JLCPCB panelizes the board** (too small to assemble on its own): 10 per
+  panel, V-cut along the long edges. JLCPCB wants copper 0.4 mm from a V-cut
+  line; this board's tracks come to 0.325 mm and the planes to 0.3 mm (the
+  routing used the 0.3 mm edge rule). Fine for a quote; to settle before
+  ordering.
+
+- **LCSC numbers for the passives and the LED** (all JLCPCB Basic parts) are
+  a table in `fab.py` until the schematic is next regenerated; JLCPCB's
+  matcher picked 01005 parts for the 0402 pads (it read "1005Metric" as the
+  imperial size), so the BOM now names packages plainly ("0402") and gives
+  part numbers. **Debug LED: red** (KT-0603R, C2286), not the white one
+  JLCPCB suggested: through 1 kΩ at 3.3 V a white LED (≈3 V) barely lights.
+  Colour is Kyle's call.
 
 ## 2026-11-27 — Pi web pages listen on IPv4 and IPv6
 

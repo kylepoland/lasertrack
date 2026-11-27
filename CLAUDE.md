@@ -57,7 +57,8 @@ KiCad's own Python: `electronics/tools/layout.py` (see its docstring), then
 `layout.py` skips any board that already has tracks; change a routed board's
 parts with Update PCB from Schematic, never by rebuilding it. After exporting each board to STEP,
 `uv run python models/pcb_fit.py` checks the boards, parts included, against
-the printed parts. Board sizes shared with the CAD live in `params.py`
+the printed parts. JLCPCB files (Gerber zip, BOM, CPL) come from
+`python3 electronics/tools/fab.py <board>.kicad_pcb`, into the board's `fab/`. Board sizes shared with the CAD live in `params.py`
 (`CPCB_*`, `SPCB_*`, `CPAD_*`, `POGO_*`).
 
 The box build fails if any two parts overlap, printed or bought (bought
