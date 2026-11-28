@@ -1,0 +1,18 @@
+Comment,Designator,Footprint,LCSC Part #
+10u,C1,0603,C19702
+1u,"C3,C4,C5",0402,
+0.5A hold,F1,Fuse_1206_3216Metric,
+To Pi,J1,PinHeader_1x07_P2.54mm_Vertical,
+WCH-LinkE,J2,PinHeader_1x02_P2.54mm_Vertical,
+Pogo 5V,P1,MillMax_0906_TH,
+Pogo GND,P2,MillMax_0906_TH,
+Pogo TX,P3,MillMax_0906_TH,
+Pogo RX,P4,MillMax_0906_TH,
+Pogo SWIO,P5,MillMax_0906_TH,
+Pogo 3V3,P6,MillMax_0906_TH,
+100k,"R1,R4",0402,C25741
+1k,"R2,R3,R6",0402,C11702
+10k,"R5,R8",0402,
+43.2k,R7,0402,
+TPS2553,U1,SOT-23-6,
+AP2112K-3.3,U2,SOT-23-5,

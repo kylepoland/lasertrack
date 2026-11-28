@@ -866,3 +866,53 @@ Details in `cartridge.md`.
   PCB: Remove Mark" (selected by default, no charge shown) or a 2D barcode,
   with no option to place the order number. With Remove Mark the
   `JLCJLCJLCJLC` text would print as written, so it was deleted from the board.
+
+## 2026-11-27 — Board review fixes: presence, current limit, sequencing
+
+From a review of both boards. JLCPCB assembly is off (Kyle, 2026-11-27):
+Kyle orders the components himself, so LCSC numbers, the JLCPCB minimum
+assembly size and placement rotations no longer matter.
+
+- **Presence resistors: cartridge R4 100 kΩ → 4.7 kΩ, slot R4 1 MΩ → 100 kΩ.**
+  The Pi's internal pulls (~50–65 kΩ) swamped the old 1 MΩ / 100 kΩ divider:
+  GPIO 24's default pull-down made an empty slot read "present", and the
+  ~50 kΩ pull-up the UART puts on RXD (GPIO 15, through 1 kΩ) made a present
+  cartridge read about 2.2 V, "empty". Now a cartridge gives 0.4 V even with
+  the RXD pull-up on. GPIO 24's pull must still be turned off
+  (`gpio=24=ip,pn`); noted in `electronics/slot_pcb.md`. The cartridge's TX
+  drives 4.7 kΩ easily (0.7 mA).
+- **Slot U1: TPS22917 load switch → TPS2553 current-limited switch.** The
+  TPS22917 had no current limit, so a key across the live 5V and GND pins
+  would load the Pi's own 5 V until the polyfuse tripped (seconds), likely
+  browning the Pi out. The TPS2553 limits to about 0.6 A within 2 µs and
+  retries. Same SOT-23-6 footprint, and pins 1 (IN), 2 (GND), 3 (EN, active
+  high) and 6 (OUT) match the TPS22917, so it dropped onto the routed board.
+  R7 is now its ILIM resistor (43.2 kΩ: 544 / 605 / 673 mA min / typ / max,
+  TI SLVS841G table 9-2), chosen so the 0.5 A budget is always available;
+  F1 stays as a backup. C2 (the TPS22917's rise-time cap) is gone; the
+  TPS2553 soft-starts in about 1 ms. It has no output discharge (only the
+  TPS25530-1 does, and that latches off), so R8, 10 kΩ, bleeds 5V_CART.
+  FAULT is left unconnected: no spare header pin.
+- **The 3.3 V regulator now runs from 5V_CART (after U1) instead of the
+  fused 5 V.** 3.3 V used to come up before 5 V (the LDO is faster than the
+  soft start), so the cartridge chip's data outputs could feed the 5 V rail
+  and LED strips through U2's (SRV05-4) diodes to its VCC pin, the same
+  problem that removed U2 pin 6 from +3V3 (2026-11-26). An LDO's output
+  can't exceed its input, so 3.3 V can no longer lead 5 V, up or down, and
+  both rails now share U1's current limit. Done by re-netting the existing
+  track to U2 and C4.
+- **Slot R6 (SWIO) 100 Ω → 1 kΩ.** The WCH-LinkE is powered from the Pi all
+  the time; 200 Ω total let it push several mA into an unpowered cartridge,
+  or into a cartridge that lost ground first on removal. 1 kΩ with ~20 pF of
+  pin and trace is a 20 ns edge, far below SDI bit times.
+- **Cartridge U2's ground via moved to 0.125 mm below pin 2** (was 1.6 mm
+  away along a track): a static discharge's path to the ground plane should
+  be as short as possible.
+- Also: a dangling 0.025 mm CART_TX stub deleted; zones refilled and saved
+  (the saved fill was stale, which made 9 signal vias appear to touch the
+  planes in DRC; the Gerbers were never affected, since `fab.py` refills).
+- **Not changed:** the SRV05-4 stays with VCC on +5V. Leaving VCC floating
+  would remove the back-feed path entirely, but the datasheet couldn't be
+  fetched to confirm that use, and the sequencing fix covers power-up and
+  power-down; a 5V pad that loses contact before the data pads can still
+  briefly back-feed, limited by the 100 Ω resistors.

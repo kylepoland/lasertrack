@@ -105,7 +105,7 @@ and add-ons.
   the pins would sit crooked; a slot PCB with about 0.6 mm holes holds them
   straight. It also carries the 3.3 V regulator, power switches and the Pi
   connector, and goes in the same JLCPCB order.
-- **Note: a staged rollout is possible but not planned.** The 100 kΩ resistor on RX lets a
+- **Note: a staged rollout is possible but not planned.** The presence resistor on RX (4.7 kΩ) lets a
   resistor-only "dumb" cartridge share the same pads (the box measures it with
   an ADC). With JLCPCB assembly, every cartridge can be smart from the start.
 
@@ -121,12 +121,12 @@ and box 5V pad (LEDs, add-ons)
 
 | Pad | x (mm) | Signal | Box side | Notes |
 |---|---|---|---|---|
-| 1 | -35 | 5V | Pi 5 V supply → fuse → load switch | LEDs and 5 V add-ons. At the end, next to GND only, so a bridge there is a plain short that the fuse catches. |
+| 1 | -35 | 5V | Pi 5 V supply → fuse → current-limited switch | LEDs and 5 V add-ons. At the end, next to GND only, so a bridge there is a plain short that the fuse catches. |
 | 2 | -21 | GND | Pi GND | |
 | 3 | -7 | TX (box → cartridge) | Pi UART TX | Cartridge RX. Also I²C SDA if switched. |
-| 4 | 7 | RX (cartridge → box) | Pi UART RX | Cartridge TX. 100 kΩ to GND on the cartridge marks it present. Also I²C SCL. |
+| 4 | 7 | RX (cartridge → box) | Pi UART RX | Cartridge TX. 4.7 kΩ to GND on the cartridge marks it present. Also I²C SCL. |
 | 5 | 21 | SWIO | WCH-LinkE SWIO | Programming and debug |
-| 6 | 35 | 3V3 | slot-board 3.3 V regulator → load switch | Chip, e-ink, Qwiic devices |
+| 6 | 35 | 3V3 | slot-board 3.3 V regulator, fed from the switched 5 V | Chip, e-ink, Qwiic devices |
 
 "TX" and "RX" are named from the box's side.
 
@@ -136,9 +136,13 @@ a checksum and are retried. The box ignores the lines for about 200 ms after
 contact while the pins settle.
 
 **Safe hot-plugging:** the box keeps 3V3 and 5V off until it sees its RX line
-pulled low by the cartridge's 100 kΩ, which needs GND and that pad both
-connected. It then turns power on through soft-start load switches. Power
-never arrives before ground, so all pins can be the same height.
+pulled low by the cartridge's 4.7 kΩ, which needs GND and that pad both
+connected. It then turns power on through a soft-start, current-limited
+switch; the 3.3 V regulator runs from that switched 5 V, so 3.3 V never leads
+5 V. Power never arrives before ground on insertion, so all pins can be the
+same height. On removal ground can leave first (5V and GND share one end, so
+a tilted pull lifts them first); the cartridge's ground current then returns
+through the data lines, which the box's 1 kΩ series resistors limit.
 
 ## Cartridge PCB parts
 
@@ -151,7 +155,7 @@ never arrives before ground, so all pins can be the same height.
 | About 10 µF on 5 V, about 4.7 µF on 3V3 | Yes | Smooth the rails for LEDs and add-ons. Kept modest because the box soft-starts power. |
 | 100 Ω series resistors on TX, RX and SWIO | Yes | Limit current into the chip's pins during hot-plugging |
 | ESD protection array (e.g. SRV05-4) on the pad lines | Yes | Dumps static from fingers on exposed pads to ground |
-| 100 kΩ RX to GND | Yes | Presence detection with power off |
+| 4.7 kΩ RX to GND | Yes | Presence detection with power off (was 100 kΩ: too weak against the Pi's internal pull-up) |
 | 2× 74AHCT1G125 buffer (SC-70, 5 V supply), with bypass jumper | Yes | Level-shifts LED data to 5 V so the LEDs read it reliably. Bypass makes the pin a plain 3.3 V GPIO. |
 | 330 Ω series resistor on each LED data line | Yes | Softens signal edges down the wire; protects the first LED |
 | 2× 4.7 kΩ I²C pull-ups, with jumper to disconnect | Yes | I²C needs them. Open the jumper if Qwiic modules bring their own, or to repurpose the pins. |
@@ -300,10 +304,11 @@ extra for countersinks.
   slot body is 1 mm deeper than `slot.py`'s, and parts hang under the board,
   so the slot needs taller risers in the box.
 - **Slot PCB carries** (`electronics/slot_pcb.md`): the 6 pins; a 0.5 A
-  polyfuse on the Pi's 5 V; a TPS22917 load switch for the cartridge's 5 V
-  (soft start, output discharge); an AP2112K-3.3 regulator for the
-  cartridge's 3.3 V, switched by the same enable; 1 kΩ in series with the
-  Pi's TX and RX; a 1 MΩ pull-up and 10 kΩ sense line on RX for presence;
+  polyfuse on the Pi's 5 V (backup); a TPS2553 current-limited switch for the
+  cartridge's 5 V (about 0.6 A limit, soft start) with a 10 kΩ bleed; an
+  AP2112K-3.3 regulator for the cartridge's 3.3 V, fed from that switched 5 V
+  and enabled by the same pin; 1 kΩ in series with the Pi's TX, RX and the
+  LinkE's SWIO; a 100 kΩ pull-up and 10 kΩ sense line on RX for presence;
   headers to the Pi (GPIO 14/15 UART, GPIO 23 power enable, GPIO 24 sense)
   and to the WCH-LinkE.
 - Contact happens as the cartridge lands on the floor, at the same moment as

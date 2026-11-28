@@ -24,7 +24,7 @@ switched to those pins in firmware (AFIO register).
 | 1 | −35 | +5V | — | LED chains, buffers, connector 5 V |
 | 2 | −21 | GND | VSS (4), exposed pad | |
 | 3 | −7 | PAD_TX (box → cartridge) | PC6 (13) via 100 Ω | USART1 RX (remap 6) or I²C SDA (remap 2) |
-| 4 | +7 | PAD_RX (cartridge → box) | PC5 (12) via 100 Ω | USART1 TX (remap 6) or I²C SCL (remap 2). 100 kΩ to GND marks the cartridge present |
+| 4 | +7 | PAD_RX (cartridge → box) | PC5 (12) via 100 Ω | USART1 TX (remap 6) or I²C SCL (remap 2). 4.7 kΩ to GND marks the cartridge present (strong enough to beat the Pi's ~50 kΩ RXD pull-up) |
 | 5 | +21 | PAD_SWIO | PD1 (15) via 100 Ω | 1-wire programming / debug |
 | 6 | +35 | +3V3 | VDD (6) | |
 

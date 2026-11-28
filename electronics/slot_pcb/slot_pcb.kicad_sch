@@ -1103,17 +1103,13 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Power_Management:TPS22917DBV"
+		(symbol "lasertrack:TPS2553DBV"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
 			(property "Reference"
 				"U"
-				(at -6.35 6.35 0)
-				(show_name no)
-				(do_not_autoplace no)
+				(at 0 8.89 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -1121,10 +1117,8 @@
 				)
 			)
 			(property "Value"
-				"TPS22917DBV"
-				(at 2.54 6.35 0)
-				(show_name no)
-				(do_not_autoplace no)
+				"TPS2553DBV"
+				(at 0 -8.89 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -1133,68 +1127,38 @@
 			)
 			(property "Footprint"
 				"Package_TO_SOT_SMD:SOT-23-6"
-				(at 0 12.7 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
+				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(hide yes)
 				)
 			)
 			(property "Datasheet"
-				"http://www.ti.com/lit/ds/symlink/tps22917.pdf"
-				(at 1.27 -17.78 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
+				"https://www.ti.com/lit/ds/symlink/tps2553.pdf"
+				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(hide yes)
 				)
 			)
 			(property "Description"
-				"1V to 5.5V, 2A, 80mΩ Ultra-Low Leakage Load Switch, SOT23-6"
+				"TI TPS2553 current-limited power switch, 2.5-6.5 V, EN active high, auto-retry, limit set by R from ILIM to GND (15k-232k), SOT-23-6. Datasheet SLVS841G."
 				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(hide yes)
 				)
 			)
-			(property "ki_keywords"
-				"high-side power distribution switch"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters"
-				"SOT?23*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "TPS22917DBV_0_1"
+			(symbol "TPS2553DBV_0_1"
 				(rectangle
-					(start -7.62 5.08)
-					(end 7.62 -5.08)
+					(start -6.35 5.08)
+					(end 6.35 -5.08)
 					(stroke
 						(width 0.254)
 						(type default)
@@ -1204,12 +1168,12 @@
 					)
 				)
 			)
-			(symbol "TPS22917DBV_1_1"
+			(symbol "TPS2553DBV_1_1"
 				(pin power_in
 					line
-					(at -10.16 2.54 0)
+					(at -8.89 2.54 0)
 					(length 2.54)
-					(name "VIN"
+					(name "IN"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1224,9 +1188,85 @@
 						)
 					)
 				)
+				(pin input
+					line
+					(at -8.89 0.0 0)
+					(length 2.54)
+					(name "EN"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin open_collector
+					line
+					(at -8.89 -2.54 0)
+					(length 2.54)
+					(name "~{FAULT}"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_out
+					line
+					(at 8.89 2.54 180)
+					(length 2.54)
+					(name "OUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive
+					line
+					(at 8.89 0.0 180)
+					(length 2.54)
+					(name "ILIM"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 				(pin power_in
 					line
-					(at 0 -7.62 90)
+					(at 8.89 -2.54 180)
 					(length 2.54)
 					(name "GND"
 						(effects
@@ -1243,84 +1283,7 @@
 						)
 					)
 				)
-				(pin input
-					line
-					(at -10.16 -2.54 0)
-					(length 2.54)
-					(name "ON"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output
-					line
-					(at -10.16 0 0)
-					(length 2.54)
-					(name "CT"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin open_collector
-					line
-					(at 10.16 -2.54 180)
-					(length 2.54)
-					(name "QOD"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_out
-					line
-					(at 10.16 2.54 180)
-					(length 2.54)
-					(name "VOUT"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
 			)
-			(embedded_fonts no)
 		)
 		(symbol "Device:R"
 			(pin_numbers
@@ -2621,7 +2584,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Power_Management:TPS22917DBV")
+		(lib_id "lasertrack:TPS2553DBV")
 		(at 134.62 121.92 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -2631,7 +2594,7 @@
 		(uuid "c1344110-10d5-5719-ac28-280d4e00380f")
 		(property "Reference"
 			"U1"
-			(at 147.32 120.65 0)
+			(at 146.05 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2640,8 +2603,8 @@
 			)
 		)
 		(property "Value"
-			"TPS22917"
-			(at 147.32 123.19 0)
+			"TPS2553"
+			(at 146.05 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2670,7 +2633,7 @@
 			)
 		)
 		(property "Note"
-			"5 V load switch: soft start, discharges the output when off"
+			"Current-limited switch for both cartridge rails: soft start (about 1 ms), limits a short on the pins to about 0.6 A instead of loading the Pi's 5 V"
 			(at 134.62 129.54 0)
 			(effects
 				(font
@@ -2682,20 +2645,20 @@
 		(pin "1"
 			(uuid "6113424f-60f3-53e5-9587-8bcb669cd14d")
 		)
-		(pin "2"
-			(uuid "8716a19e-e625-570f-bb57-3c1b01ea945c")
-		)
 		(pin "3"
 			(uuid "6be80542-48b5-507e-82a0-868aa9cb2d74")
 		)
 		(pin "4"
 			(uuid "82f92ac4-b74a-5b4b-97ed-5ed3b1d612da")
 		)
+		(pin "6"
+			(uuid "d4a3bb98-4b0d-526f-aed7-a057b71f8a57")
+		)
 		(pin "5"
 			(uuid "e7dba03c-fd08-5153-8c95-814995199d7e")
 		)
-		(pin "6"
-			(uuid "d4a3bb98-4b0d-526f-aed7-a057b71f8a57")
+		(pin "2"
+			(uuid "8716a19e-e625-570f-bb57-3c1b01ea945c")
 		)
 		(instances
 			(project "slot_pcb"
@@ -2707,82 +2670,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 185.42 121.92 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "f3977bef-55f5-54fe-a0c2-6525090ce04b")
-		(property "Reference"
-			"C2"
-			(at 187.96 120.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value"
-			"1n"
-			(at 187.96 123.19 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint"
-			"Capacitor_SMD:C_0402_1005Metric"
-			(at 185.42 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet"
-			"~"
-			(at 185.42 127.0 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Note"
-			"Sets the 5 V rise time"
-			(at 185.42 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "8efb12b7-f4e3-57d6-aa4d-6b8608b3d61f")
-		)
-		(pin "2"
-			(uuid "202628cd-ba4e-5db2-ab99-15899f729b39")
-		)
-		(instances
-			(project "slot_pcb"
-				(path "/b22adc81-240a-5423-aefb-e0e5699f1814"
-					(reference "C2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
-		(at 226.06 121.92 0)
+		(at 182.88 121.92 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2791,7 +2680,7 @@
 		(uuid "2b078599-4d53-5a82-9f58-8f6f2a9448e3")
 		(property "Reference"
 			"R7"
-			(at 228.6 120.65 0)
+			(at 185.42 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2800,8 +2689,8 @@
 			)
 		)
 		(property "Value"
-			"100"
-			(at 228.6 123.19 0)
+			"43.2k"
+			(at 185.42 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2811,7 +2700,7 @@
 		)
 		(property "Footprint"
 			"Resistor_SMD:R_0402_1005Metric"
-			(at 226.06 125.73 0)
+			(at 182.88 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2821,7 +2710,7 @@
 		)
 		(property "Datasheet"
 			"~"
-			(at 226.06 127.0 0)
+			(at 182.88 127.0 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2830,8 +2719,8 @@
 			)
 		)
 		(property "Note"
-			"Output discharge path when switched off"
-			(at 226.06 129.54 0)
+			"Current limit: 544 / 605 / 673 mA min / typ / max (1%, SLVS841G table 9-2)"
+			(at 182.88 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2855,17 +2744,17 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 266.7 121.92 0)
+		(lib_id "Device:R")
+		(at 223.52 121.92 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "51f3d82e-447c-52b1-b1d3-0f52afa0063a")
+		(uuid "f28972ac-8278-5d1a-95b1-cf47ef19822b")
 		(property "Reference"
-			"C3"
-			(at 269.24 120.65 0)
+			"R8"
+			(at 226.06 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2874,8 +2763,8 @@
 			)
 		)
 		(property "Value"
-			"1u"
-			(at 269.24 123.19 0)
+			"10k"
+			(at 226.06 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2884,8 +2773,8 @@
 			)
 		)
 		(property "Footprint"
-			"Capacitor_SMD:C_0402_1005Metric"
-			(at 266.7 125.73 0)
+			"Resistor_SMD:R_0402_1005Metric"
+			(at 223.52 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2895,7 +2784,81 @@
 		)
 		(property "Datasheet"
 			"~"
-			(at 266.7 127.0 0)
+			(at 223.52 127.0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Note"
+			"Bleeds the 5 V pin to 0 V when switched off (the TPS2553 has no output discharge)"
+			(at 223.52 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "619de704-ad0d-510b-b97b-55d569999975")
+		)
+		(pin "2"
+			(uuid "367d92c2-b2b0-55b1-a104-dfd3ba332066")
+		)
+		(instances
+			(project "slot_pcb"
+				(path "/b22adc81-240a-5423-aefb-e0e5699f1814"
+					(reference "R8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 264.16 121.92 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "51f3d82e-447c-52b1-b1d3-0f52afa0063a")
+		(property "Reference"
+			"C3"
+			(at 266.7 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value"
+			"1u"
+			(at 266.7 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint"
+			"Capacitor_SMD:C_0402_1005Metric"
+			(at 264.16 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet"
+			"~"
+			(at 264.16 127.0 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2920,7 +2883,7 @@
 	)
 	(symbol
 		(lib_id "Regulator_Linear:AP2112K-3.3")
-		(at 312.42 121.92 0)
+		(at 309.88 121.92 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2929,7 +2892,7 @@
 		(uuid "b5d88d2f-a0ec-5777-b5ee-9b140d438b03")
 		(property "Reference"
 			"U2"
-			(at 322.58 120.65 0)
+			(at 320.04 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2939,7 +2902,7 @@
 		)
 		(property "Value"
 			"AP2112K-3.3"
-			(at 322.58 123.19 0)
+			(at 320.04 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2949,7 +2912,7 @@
 		)
 		(property "Footprint"
 			"Package_TO_SOT_SMD:SOT-23-5"
-			(at 312.42 125.73 0)
+			(at 309.88 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2959,7 +2922,7 @@
 		)
 		(property "Datasheet"
 			"~"
-			(at 312.42 127.0 0)
+			(at 309.88 127.0 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2968,8 +2931,8 @@
 			)
 		)
 		(property "Note"
-			"Cartridge 3.3 V, on with PWR_EN"
-			(at 312.42 129.54 0)
+			"Cartridge 3.3 V, fed from the switched 5 V so 3.3 V never leads 5 V"
+			(at 309.88 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3003,7 +2966,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 360.68 121.92 0)
+		(at 358.14 121.92 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3012,7 +2975,7 @@
 		(uuid "db09b0e7-ff78-5294-915f-dd51bd2cefcd")
 		(property "Reference"
 			"C4"
-			(at 363.22 120.65 0)
+			(at 360.68 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3022,7 +2985,7 @@
 		)
 		(property "Value"
 			"1u"
-			(at 363.22 123.19 0)
+			(at 360.68 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3032,7 +2995,7 @@
 		)
 		(property "Footprint"
 			"Capacitor_SMD:C_0402_1005Metric"
-			(at 360.68 125.73 0)
+			(at 358.14 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3042,7 +3005,7 @@
 		)
 		(property "Datasheet"
 			"~"
-			(at 360.68 127.0 0)
+			(at 358.14 127.0 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3067,7 +3030,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 401.32 121.92 0)
+		(at 398.78 121.92 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3076,7 +3039,7 @@
 		(uuid "b7521fff-f747-5f97-959b-c8aa614929c9")
 		(property "Reference"
 			"C5"
-			(at 403.86 120.65 0)
+			(at 401.32 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3086,7 +3049,7 @@
 		)
 		(property "Value"
 			"1u"
-			(at 403.86 123.19 0)
+			(at 401.32 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3096,7 +3059,7 @@
 		)
 		(property "Footprint"
 			"Capacitor_SMD:C_0402_1005Metric"
-			(at 401.32 125.73 0)
+			(at 398.78 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3106,7 +3069,7 @@
 		)
 		(property "Datasheet"
 			"~"
-			(at 401.32 127.0 0)
+			(at 398.78 127.0 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3131,7 +3094,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 441.96 121.92 0)
+		(at 439.42 121.92 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3140,7 +3103,7 @@
 		(uuid "9e5ac63b-6a99-50aa-a5a2-4d594b8be56e")
 		(property "Reference"
 			"R1"
-			(at 444.5 120.65 0)
+			(at 441.96 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3150,7 +3113,7 @@
 		)
 		(property "Value"
 			"100k"
-			(at 444.5 123.19 0)
+			(at 441.96 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3160,7 +3123,7 @@
 		)
 		(property "Footprint"
 			"Resistor_SMD:R_0402_1005Metric"
-			(at 441.96 125.73 0)
+			(at 439.42 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3170,7 +3133,7 @@
 		)
 		(property "Datasheet"
 			"~"
-			(at 441.96 127.0 0)
+			(at 439.42 127.0 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3180,7 +3143,7 @@
 		)
 		(property "Note"
 			"Power off while the Pi boots"
-			(at 441.96 129.54 0)
+			(at 439.42 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3361,7 +3324,7 @@
 			)
 		)
 		(property "Value"
-			"1M"
+			"100k"
 			(at 127.0 158.75 0)
 			(effects
 				(font
@@ -3391,7 +3354,7 @@
 			)
 		)
 		(property "Note"
-			"Weak pull-up: high = empty slot"
+			"Pull-up: high = empty slot"
 			(at 124.46 165.1 0)
 			(effects
 				(font
@@ -3509,7 +3472,7 @@
 			)
 		)
 		(property "Value"
-			"100"
+			"1k"
 			(at 208.28 158.75 0)
 			(effects
 				(font
@@ -3531,6 +3494,16 @@
 		(property "Datasheet"
 			"~"
 			(at 205.74 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Note"
+			"Limits current into an unpowered cartridge from the always-on WCH-LinkE"
+			(at 205.74 165.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3807,7 +3780,7 @@
 		(uuid "9aae97a9-07f2-57c5-be47-10df59ceb6bd")
 	)
 	(label "+5V_F"
-		(at 124.46 119.38 180)
+		(at 125.73 119.38 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3817,19 +3790,8 @@
 		)
 		(uuid "efaaaf1a-7f71-501b-ba97-8928fecf9ff8")
 	)
-	(label "GND"
-		(at 134.62 129.54 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "94179713-ddb1-5b41-a142-d1346bca3a1e")
-	)
 	(label "PWR_EN"
-		(at 124.46 124.46 180)
+		(at 125.73 121.92 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3839,30 +3801,8 @@
 		)
 		(uuid "fd3e6886-a064-55fe-adb7-b25ac2a49b3b")
 	)
-	(label "CT"
-		(at 124.46 121.92 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "d55b7233-fc39-5bbd-9eeb-d6240b3719a9")
-	)
-	(label "QOD"
-		(at 144.78 124.46 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "14fd439f-c522-550a-b162-0705b4ef5afd")
-	)
 	(label "5V_CART"
-		(at 144.78 119.38 0)
+		(at 143.51 119.38 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3872,8 +3812,8 @@
 		)
 		(uuid "ff269335-d715-57ba-9292-d56c759f7a40")
 	)
-	(label "CT"
-		(at 185.42 118.11 90)
+	(label "ILIM"
+		(at 143.51 121.92 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3881,21 +3821,21 @@
 			)
 			(justify left)
 		)
-		(uuid "cf730f9e-aa12-591a-84bb-7a1a5c89496c")
+		(uuid "14fd439f-c522-550a-b162-0705b4ef5afd")
 	)
 	(label "GND"
-		(at 185.42 125.73 270)
+		(at 143.51 124.46 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right)
+			(justify left)
 		)
-		(uuid "47885034-cffb-5585-a95f-84707dea8962")
+		(uuid "94179713-ddb1-5b41-a142-d1346bca3a1e")
 	)
-	(label "QOD"
-		(at 226.06 118.11 90)
+	(label "ILIM"
+		(at 182.88 118.11 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3905,8 +3845,8 @@
 		)
 		(uuid "0184fb4a-b984-5721-aed2-39d9b129539d")
 	)
-	(label "5V_CART"
-		(at 226.06 125.73 270)
+	(label "GND"
+		(at 182.88 125.73 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3917,7 +3857,29 @@
 		(uuid "94b5bf06-8d6c-50d6-8294-5d88cfca1ce1")
 	)
 	(label "5V_CART"
-		(at 266.7 118.11 90)
+		(at 223.52 118.11 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3580e4bb-dbfa-5af9-8b82-483c07dd311a")
+	)
+	(label "GND"
+		(at 223.52 125.73 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "e7511b02-dbbb-5e7c-adc6-764953f4de7f")
+	)
+	(label "5V_CART"
+		(at 264.16 118.11 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3928,7 +3890,7 @@
 		(uuid "88cf0b8f-9861-5f71-8eab-370a8eb55145")
 	)
 	(label "GND"
-		(at 266.7 125.73 270)
+		(at 264.16 125.73 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3938,8 +3900,8 @@
 		)
 		(uuid "9d1e0bbc-8945-5929-bfa0-090bac1acb70")
 	)
-	(label "+5V_F"
-		(at 304.8 119.38 180)
+	(label "5V_CART"
+		(at 302.26 119.38 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3950,7 +3912,7 @@
 		(uuid "dc71bafa-d70c-5e06-a81a-301977b5c9cc")
 	)
 	(label "GND"
-		(at 312.42 129.54 270)
+		(at 309.88 129.54 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3961,7 +3923,7 @@
 		(uuid "61b6676c-2b8f-5c42-87b8-7519371d59c2")
 	)
 	(label "PWR_EN"
-		(at 304.8 121.92 180)
+		(at 302.26 121.92 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3972,7 +3934,7 @@
 		(uuid "38ab0365-dce9-5169-b9a4-8d91c4c7d55d")
 	)
 	(label "3V3_CART"
-		(at 320.04 119.38 0)
+		(at 317.5 119.38 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3982,8 +3944,8 @@
 		)
 		(uuid "9528c725-e650-5bee-9847-d032dfdc9942")
 	)
-	(label "+5V_F"
-		(at 360.68 118.11 90)
+	(label "5V_CART"
+		(at 358.14 118.11 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3994,7 +3956,7 @@
 		(uuid "c6a8b67b-9f1f-53a8-8611-71d5058a2ca1")
 	)
 	(label "GND"
-		(at 360.68 125.73 270)
+		(at 358.14 125.73 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4005,7 +3967,7 @@
 		(uuid "3065c5a4-ddfc-5a26-b9c8-5e2cc10ed130")
 	)
 	(label "3V3_CART"
-		(at 401.32 118.11 90)
+		(at 398.78 118.11 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4016,7 +3978,7 @@
 		(uuid "b79213ed-c21e-562f-8433-e2f7e42fb046")
 	)
 	(label "GND"
-		(at 401.32 125.73 270)
+		(at 398.78 125.73 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4027,7 +3989,7 @@
 		(uuid "2392e28e-e55c-524f-98d7-5be2d4d87981")
 	)
 	(label "PWR_EN"
-		(at 441.96 118.11 90)
+		(at 439.42 118.11 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4038,7 +4000,7 @@
 		(uuid "68559d27-4356-5002-957d-beed3a44d31a")
 	)
 	(label "GND"
-		(at 441.96 125.73 270)
+		(at 439.42 125.73 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4159,7 +4121,11 @@
 		(uuid "096f03ba-8072-5bd9-9f8f-75d6306c55bb")
 	)
 	(no_connect
-		(at 317.5 121.92)
+		(at 125.73 124.46)
+		(uuid "d0b8d993-ea51-5c08-912c-0280b0e42192")
+	)
+	(no_connect
+		(at 314.96 121.92)
 		(uuid "2a5ff566-bc29-59be-ae9b-d0b4c43a3b7f")
 	)
 	(text "Pogo pins (6x Mill-Max 0906-2)"

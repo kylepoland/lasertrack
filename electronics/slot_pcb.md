@@ -9,18 +9,18 @@ Board: slot PCB, 84 × 18.6 × 1.6 mm. Six Mill-Max 0906-2 pogo pins on top
 (through-hole, hand-soldered), everything else surface-mount on the underside.
 Logic level: **3.3 V**. Powered from: the Pi's 5 V pin (which comes from the
 5 V 4 A supply). The board makes the cartridge's 3.3 V itself (AP2112K-3.3),
-so the Pi's own 3.3 V rail only feeds one 1 MΩ pull-up.
+so the Pi's own 3.3 V rail only feeds one 100 kΩ pull-up.
 
 ## Pogo pins (to the cartridge pads)
 
 | Pin | x (mm) | Net | Source | Notes |
 |---|---|---|---|---|
-| P1 | −35 | 5V_CART | Pi 5 V → F1 (0.5 A polyfuse) → U1 load switch | Off until PWR_EN |
+| P1 | −35 | 5V_CART | Pi 5 V → F1 (0.5 A polyfuse) → U1 TPS2553 current-limited switch | Off until PWR_EN. Limit about 0.6 A (R7 43.2 kΩ: 544–673 mA). R8 10 kΩ bleeds it to 0 V when off |
 | P2 | −21 | GND | Pi GND | |
 | P3 | −7 | POGO_TX | Pi TXD (GPIO 14) via 1 kΩ | |
-| P4 | +7 | POGO_RX | Pi RXD (GPIO 15) via 1 kΩ | 1 MΩ pull-up to Pi 3.3 V; SENSE via 10 kΩ |
-| P5 | +21 | POGO_SWIO | WCH-LinkE SWIO via 100 Ω | |
-| P6 | +35 | 3V3_CART | U2 AP2112K-3.3 from fused 5 V | Off until PWR_EN |
+| P4 | +7 | POGO_RX | Pi RXD (GPIO 15) via 1 kΩ | 100 kΩ pull-up to Pi 3.3 V; SENSE via 10 kΩ |
+| P5 | +21 | POGO_SWIO | WCH-LinkE SWIO via 1 kΩ | The LinkE is always powered: 1 kΩ limits what it can push into an unpowered cartridge |
+| P6 | +35 | 3V3_CART | U2 AP2112K-3.3 fed from 5V_CART (after U1) | Off until PWR_EN. Fed from the switched 5 V, so it shares U1's current limit and never leads the 5 V rail |
 
 ## J1 — to the Raspberry Pi (2.54 mm header, dupont wires)
 
@@ -50,14 +50,24 @@ Leave the LinkE's 3.3 V unconnected: the slot board powers the cartridge.
 
 ## How the box uses it
 
-1. Empty slot: PWR_EN low, both rails off. The 1 MΩ pull-up holds the RX line
-   high, so SENSE reads high.
-2. A cartridge lands: its 100 kΩ pulls the RX line to about 0.3 V, so SENSE
-   reads low.
-3. The Pi sets PWR_EN high. The 5 V rail ramps up softly (U1, C2 sets the
-   rate) and the 3.3 V rail comes up. Only then does the Pi switch GPIO 14 to
-   UART TX, so it never powers an unpowered cartridge through its data pin.
+1. Empty slot: PWR_EN low, both rails off. The 100 kΩ pull-up holds the RX
+   line high, so SENSE reads high.
+2. A cartridge lands: its 4.7 kΩ pulls the RX line low, so SENSE reads low:
+   about 0.15 V, or 0.4 V with the Pi's ~50 kΩ RXD pull-up on (it is, once the
+   UART is enabled).
+   **The Pi's internal pull on GPIO 24 must be off** (`gpio=24=ip,pn` in
+   `config.txt`): its default ~50 kΩ pull-down, through R5, would hold an
+   empty slot's line near 2 V, too close to the Pi's input threshold.
+3. The Pi sets PWR_EN high. U1 ramps the 5 V rail up in about 1 ms (its
+   built-in soft start), and the 3.3 V regulator, fed from that rail, follows
+   it, so 3.3 V never leads 5 V. Only then does the Pi switch GPIO 14 to UART
+   TX, so it never powers an unpowered cartridge through its data pin.
 4. The cartridge's firmware starts, drives its TX high (idle), and answers
    over the UART at 115200 baud.
 5. Removal: the UART goes quiet (heartbeat timeout). The Pi sets GPIO 14 back
-   to an input and PWR_EN low; U1 discharges the 5 V rail.
+   to an input and PWR_EN low; R8 bleeds the 5 V rail to 0 V (about 10 ms).
+6. A short on the pins (a key across 5V and GND while powered): U1 holds the
+   current at about 0.6 A, so the Pi's 5 V rail stays up, and retries until the
+   short is gone; if it heats up, its thermal shutdown cycles it. F1 is a
+   backup in case U1 fails shorted. U1's FAULT output is not connected
+   (no spare header pin); the Pi sees the cartridge stop answering instead.

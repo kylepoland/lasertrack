@@ -68,8 +68,19 @@ def mcu_symbol():
         datasheet="https://www.wch-ic.com/products/CH32V006.html")
 
 
+def tps2553_symbol():
+    return ic_symbol(
+        "TPS2553DBV", "U", "Package_TO_SOT_SMD:SOT-23-6",
+        [("1", "IN", "power_in"), ("3", "EN", "input"), ("4", "~{FAULT}", "open_collector")],
+        [("6", "OUT", "power_out"), ("5", "ILIM", "passive"), ("2", "GND", "power_in")],
+        width=12.7,
+        descr="TI TPS2553 current-limited power switch, 2.5-6.5 V, EN active high, auto-retry, "
+              "limit set by R from ILIM to GND (15k-232k), SOT-23-6. Datasheet SLVS841G.",
+        datasheet="https://www.ti.com/lit/ds/symlink/tps2553.pdf")
+
+
 def write_library():
-    write_symbol_lib([mcu_symbol()])
+    write_symbol_lib([mcu_symbol(), tps2553_symbol()])
     contact_pad_footprint("ContactPad_3x4mm", 3.0, 4.0)
     # Mill-Max 0906: tail 0.43 dia (0.51 min hole), flange 1.83.
     pogo_footprint("MillMax_0906_TH", 0.6, 1.2, 1.83)
@@ -88,7 +99,9 @@ def cartridge_groups():
         R("R1", "100", "PAD_TX", "CART_RX", note="Box TX -> cartridge RX (PC6)"),
         R("R2", "100", "PAD_RX", "CART_TX", note="Cartridge TX (PC5) -> box RX"),
         R("R3", "100", "PAD_SWIO", "SWIO"),
-        R("R4", "100k", "PAD_RX", "GND", note="Presence: pulls the box RX line low with power off"),
+        R("R4", "4.7k", "PAD_RX", "GND",
+          note="Presence: pulls the box RX line low with power off. Strong enough to beat the Pi's "
+               "~50k internal pull-up on its RXD pin (0.4 V with the slot's 100k)"),
         Part("U2", "Power_Protection:SRV05-4", "SRV05-4", "Package_TO_SOT_SMD:SOT-23-6",
              {"1": "PAD_TX", "3": "PAD_RX", "4": "PAD_SWIO", "6": None, "5": "+5V", "2": "GND"},
              note="Pin 6 unconnected: on +3V3 its diode to VCC (+5V) would feed the 5 V rail "
@@ -171,25 +184,27 @@ def slot_groups():
     power = [
         Part("F1", "Device:Polyfuse", "0.5A hold", "Fuse:Fuse_1206_3216Metric", {"1": "+5V_PI", "2": "+5V_F"}),
         C("C1", "10u", "+5V_F", fp=C0603),
-        Part("U1", "Power_Management:TPS22917DBV", "TPS22917", "Package_TO_SOT_SMD:SOT-23-6",
-             {"1": "+5V_F", "2": "GND", "3": "PWR_EN", "4": "CT", "5": "QOD", "6": "5V_CART"},
-             note="5 V load switch: soft start, discharges the output when off"),
-        C("C2", "1n", "CT", note="Sets the 5 V rise time"),
-        R("R7", "100", "QOD", "5V_CART", note="Output discharge path when switched off"),
+        Part("U1", "lasertrack:TPS2553DBV", "TPS2553", "Package_TO_SOT_SMD:SOT-23-6",
+             {"1": "+5V_F", "2": "GND", "3": "PWR_EN", "4": None, "5": "ILIM", "6": "5V_CART"},
+             note="Current-limited switch for both cartridge rails: soft start (about 1 ms), "
+                  "limits a short on the pins to about 0.6 A instead of loading the Pi's 5 V"),
+        R("R7", "43.2k", "ILIM", "GND", note="Current limit: 544 / 605 / 673 mA min / typ / max (1%, SLVS841G table 9-2)"),
+        R("R8", "10k", "5V_CART", "GND", note="Bleeds the 5 V pin to 0 V when switched off (the TPS2553 has no output discharge)"),
         C("C3", "1u", "5V_CART"),
         Part("U2", "Regulator_Linear:AP2112K-3.3", "AP2112K-3.3", "Package_TO_SOT_SMD:SOT-23-5",
-             {"1": "+5V_F", "2": "GND", "3": "PWR_EN", "4": None, "5": "3V3_CART"},
-             note="Cartridge 3.3 V, on with PWR_EN"),
-        C("C4", "1u", "+5V_F"),
+             {"1": "5V_CART", "2": "GND", "3": "PWR_EN", "4": None, "5": "3V3_CART"},
+             note="Cartridge 3.3 V, fed from the switched 5 V so 3.3 V never leads 5 V"),
+        C("C4", "1u", "5V_CART"),
         C("C5", "1u", "3V3_CART"),
         R("R1", "100k", "PWR_EN", "GND", note="Power off while the Pi boots"),
     ]
     signals = [
         R("R2", "1k", "PI_TXD", "POGO_TX", note="Limits current if a pad is shorted"),
         R("R3", "1k", "PI_RXD", "POGO_RX"),
-        R("R4", "1M", "POGO_RX", "+3V3_PI", note="Weak pull-up: high = empty slot"),
+        R("R4", "100k", "POGO_RX", "+3V3_PI", note="Pull-up: high = empty slot"),
         R("R5", "10k", "POGO_RX", "SENSE", note="Pi reads presence here (low = cartridge in, power off)"),
-        R("R6", "100", "LINK_SWIO", "POGO_SWIO"),
+        R("R6", "1k", "LINK_SWIO", "POGO_SWIO",
+          note="Limits current into an unpowered cartridge from the always-on WCH-LinkE"),
     ]
     return [("Pogo pins (6x Mill-Max 0906-2)", pins), ("Connectors to the Pi and programmer", headers),
             ("Power: fuse, 5 V switch, 3.3 V regulator", power), ("Signals and presence", signals)]
