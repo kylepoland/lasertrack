@@ -90,7 +90,9 @@ def cartridge_groups():
         R("R3", "100", "PAD_SWIO", "SWIO"),
         R("R4", "100k", "PAD_RX", "GND", note="Presence: pulls the box RX line low with power off"),
         Part("U2", "Power_Protection:SRV05-4", "SRV05-4", "Package_TO_SOT_SMD:SOT-23-6",
-             {"1": "PAD_TX", "3": "PAD_RX", "4": "PAD_SWIO", "6": "+3V3", "5": "+5V", "2": "GND"}),
+             {"1": "PAD_TX", "3": "PAD_RX", "4": "PAD_SWIO", "6": None, "5": "+5V", "2": "GND"},
+             note="Pin 6 unconnected: on +3V3 its diode to VCC (+5V) would feed the 5 V rail "
+                  "while 3.3 V comes up first. The 3V3 pad's 4.7 uF absorbs ESD"),
         flag("#FLG1", "+5V"), flag("#FLG2", "+3V3"), flag("#FLG3", "GND"),
     ]
     mcu = [
@@ -141,7 +143,7 @@ def cartridge_groups():
               "7": "+3V3", "8": "+3V3"}, dnp=True, note="Image storage, 4 MB. WP and HOLD tied high"),
         C("C6", "100n", "+3V3", dnp=True),
     ]
-    spare = [conn("J5", "Spare pads", ["SPARE_PA2", "SPARE_PD7", "SPI_MISO", "GND", "+3V3", "+5V"],
+    spare = [conn("J5", "Spare pads", ["SPI_MISO", "SPARE_PD7", "SPARE_PA2", "+3V3", "+5V", "GND"],
                   "lasertrack:SparePads_2x3_P1.5mm")]
     return [("Contact pads (bottom), protection, presence", contacts),
             ("Microcontroller, decoupling, debug LED", mcu),

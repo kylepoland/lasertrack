@@ -28,7 +28,10 @@ switched to those pins in firmware (AFIO register).
 | 5 | +21 | PAD_SWIO | PD1 (15) via 100 Ω | 1-wire programming / debug |
 | 6 | +35 | +3V3 | VDD (6) | |
 
-All four non-ground pads have ESD protection (U2, SRV05-4).
+The three data pads have ESD protection (U2, SRV05-4; its VCC pin on +5V
+clamps the 5V pad too). U2 pin 6 is left unconnected: on +3V3 its internal
+diode to VCC would feed the 5 V rail from the 3.3 V rail, which comes up
+first. The 3V3 pad needs no clamp: its 4.7 µF absorbs a static discharge.
 
 ## Chip pins
 
@@ -68,7 +71,7 @@ software I²C on its pins.
 | J2 | LED chain B | +5V | LEDB_OUT | GND | | | | | |
 | J3 | Qwiic (standard order) | GND | +3V3 | SDA | SCL | | | | |
 | J4 | Display (e-ink module) | GND | +3V3 | SCK | MOSI | CS | DC | RST | BUSY |
-| J5 | Spare pads (2 × 3 grid, 1.5 mm, bare) | PA2 | PD7 | PD5 | GND | +3V3 | +5V | | |
+| J5 | Spare pads (2 × 3 grid, 1.5 mm, bare) | PD5 (MISO) | PD7 | PA2 | +3V3 | +5V | GND | | |
 
 LED data (J1/J2 pin 2) is 5 V through a 74AHCT1G125 buffer (SC-70) and 330 Ω by
 default. To use that pin as a plain 3.3 V GPIO: cut JP2 (or JP3) between pads

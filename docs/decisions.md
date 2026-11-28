@@ -824,3 +824,45 @@ Details in `cartridge.md`.
   clients on that AP couldn't reach each other. Restarting the AP fixed it;
   roll the firmware back if it returns. The FS42 page on :4242 asks for the
   `api_key` from its `main_config.json`.
+
+## 2026-11-27 — Cartridge PCB review fixes
+
+- **U2 (SRV05-4) pin 6 unconnected; it was on +3V3.** The slot's 3.3 V
+  regulator has no soft start and shares the 5 V load switch's enable, so
+  3.3 V comes up before 5 V. Through U2's internal diode from pin 6 to VCC
+  (+5V), the 3.3 V rail would charge the 5 V rail and the LED strips, skipping
+  the soft start. The 3V3 pad needs no clamp: 4.7 µF absorbs a static discharge
+  (8 kV × 100 pF / 4.7 µF ≈ 0.17 V). Kyle removed the track; the schematic
+  (`boards.py`) and the pad net now match.
+- **The schematic's J5 now matches the board** (1 PD5/MISO, 2 PD7, 3 PA2,
+  4 +3V3, 5 +5V, 6 GND). Schematic parity shows no net differences now, only
+  fields (Note, LCSC, BOM exclusion).
+- **CH32V006F8U6 pins checked against WCH's datasheet V1.7** (table 2-1-1 and
+  notes 4–5): every pin number and remap in `cartridge_pcb.md` matches. On
+  this package PD7 is the reset pin (note 5) and is bonded to PA4 (note 4).
+- Ignored for now (Kyle): copper to the V-cut edges (0.3 mm vs JLCPCB's 0.4)
+  and LCSC numbers for J1–J4, U2–U4.
+
+## 2026-11-27 — Via size: 0.2 mm holes are not free
+
+- **Correction to 2026-11-25/26:** JLCPCB does charge for 0.2 mm via holes.
+  Choosing "0.2mm/(0.3/0.35mm)" forces the 4-wire Kelvin test and FR4 Tg155,
+  which nearly doubled Kyle's quote. The capabilities page lists no line-item
+  surcharge, but the order form adds these options.
+- **0.25 mm holes fit without any routing change:** with every via set to a
+  0.25 mm hole and the 0.45 mm pad kept, DRC shows 0 errors (0.1 mm annular
+  ring). A 0.3 mm hole does not fit (0.075 mm ring, 169 hole-clearance
+  errors) without rerouting.
+- **0.25 mm holes also raise the price** (Kyle, 2026-11-27). The cheap option
+  is "0.3mm/(0.4/0.45mm)". Keeping the 0.45 mm via pad and drilling 0.3 mm
+  (0.075 mm ring, which JLCPCB's form names as allowed) gives 0 DRC errors
+  once the board rules are set to that ring and a 0.2 mm hole clearance; the
+  tightest hole-to-copper gap is 0.226 mm. A 0.5 mm pad instead gives 165
+  clearance errors.
+- **Applied (Kyle, 2026-11-27): all 118 cartridge vias are 0.3 mm holes in
+  0.45 mm pads.** Board rules: via ring 0.075, hole clearance 0.2, minimum hole
+  0.3 (so DRC flags any new smaller via). Order with "0.3mm/(0.4/0.45mm)".
+- **No order-number marker** (2026-11-27): JLCPCB's form now offers "Mark on
+  PCB: Remove Mark" (selected by default, no charge shown) or a 2D barcode,
+  with no option to place the order number. With Remove Mark the
+  `JLCJLCJLCJLC` text would print as written, so it was deleted from the board.

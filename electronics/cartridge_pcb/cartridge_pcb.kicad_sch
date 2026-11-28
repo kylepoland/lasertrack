@@ -4714,6 +4714,16 @@
 				(hide yes)
 			)
 		)
+		(property "Note"
+			"Pin 6 unconnected: on +3V3 its diode to VCC (+5V) would feed the 5 V rail while 3.3 V comes up first. The 3V3 pad's 4.7 uF absorbs ESD"
+			(at 457.2 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b9b1eee0-9460-5086-ad49-df9f595ce2c4")
 		)
@@ -6880,17 +6890,6 @@
 		)
 		(uuid "8f3d3a07-ad7c-518e-a42c-0821eb8e910d")
 	)
-	(label "+3V3"
-		(at 469.9 66.04 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "f5cc7697-5c97-5425-8047-8b0ee7d6667d")
-	)
 	(label "+5V"
 		(at 510.54 50.8 270)
 		(fields_autoplaced yes)
@@ -7903,7 +7902,7 @@
 		)
 		(uuid "abe7994d-d346-5dcf-a338-3790c9b7990e")
 	)
-	(label "SPARE_PA2"
+	(label "SPI_MISO"
 		(at 45.72 355.6 180)
 		(fields_autoplaced yes)
 		(effects
@@ -7925,7 +7924,7 @@
 		)
 		(uuid "3171ef38-9008-576c-bc82-5b37618428c8")
 	)
-	(label "SPI_MISO"
+	(label "SPARE_PA2"
 		(at 45.72 360.68 180)
 		(fields_autoplaced yes)
 		(effects
@@ -7936,7 +7935,7 @@
 		)
 		(uuid "dc8a546c-8b52-51f1-b643-bd7292d6155c")
 	)
-	(label "GND"
+	(label "+3V3"
 		(at 45.72 363.22 180)
 		(fields_autoplaced yes)
 		(effects
@@ -7947,7 +7946,7 @@
 		)
 		(uuid "71bbde74-888b-5f46-8a04-087479eafe2c")
 	)
-	(label "+3V3"
+	(label "+5V"
 		(at 45.72 365.76 180)
 		(fields_autoplaced yes)
 		(effects
@@ -7958,7 +7957,7 @@
 		)
 		(uuid "e7e9ecee-c70e-5d81-b762-8f030d5dab33")
 	)
-	(label "+5V"
+	(label "GND"
 		(at 45.72 368.3 180)
 		(fields_autoplaced yes)
 		(effects
@@ -7968,6 +7967,10 @@
 			(justify right)
 		)
 		(uuid "927c4d9d-4059-5d11-91ad-956eed76c6e2")
+	)
+	(no_connect
+		(at 469.9 66.04)
+		(uuid "327f2612-5a77-5470-99af-3d754c427a12")
 	)
 	(text "Contact pads (bottom), protection, presence"
 		(exclude_from_sim no)
