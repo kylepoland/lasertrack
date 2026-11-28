@@ -911,8 +911,20 @@ assembly size and placement rotations no longer matter.
 - Also: a dangling 0.025 mm CART_TX stub deleted; zones refilled and saved
   (the saved fill was stale, which made 9 signal vias appear to touch the
   planes in DRC; the Gerbers were never affected, since `fab.py` refills).
-- **Not changed:** the SRV05-4 stays with VCC on +5V. Leaving VCC floating
-  would remove the back-feed path entirely, but the datasheet couldn't be
-  fetched to confirm that use, and the sequencing fix covers power-up and
-  power-down; a 5V pad that loses contact before the data pads can still
-  briefly back-feed, limited by the 100 Ω resistors.
+- **Not changed: the SRV05-4 keeps pin 5 (VCC) on +5V.** Checked against
+  Kyle's copy of the Semtech datasheet (2008), applications information: pins
+  1, 3, 4, 6 are I/O, pin 2 ground, pin 5 the positive reference. It lists
+  three options: (1) pin 5 straight to the supply, which also protects the
+  power line ("The internal TVS diode prevents over-voltage on the supply
+  rail"), as in its USB example with pin 5 on VBUS; (2) pin 5 to the supply
+  through 100 kΩ; (3) pin 5 unconnected, the internal TVS as the reference.
+  Ours is option 1, and our 5 V rail reaches an exposed pad, which is the case
+  it's meant for. (Its DVI example leaves pin 5 open only because that supply
+  isn't exposed.) Option 3, with the 5V pad moved to the spare I/O pin 6,
+  would remove the last back-feed path, but needs rerouting at U2 where the
+  gap between its pad rows and the SPARE_PD7 track is too narrow for a 5 V
+  track. The sequencing fix already covers power-up and power-down; the one
+  remaining case, a 5V pad losing contact before the data pads on removal, is
+  brief and limited by the 100 Ω resistors. Ratings: VRWM 5 V, VBR 6 V min
+  (1 mA), leakage 5 µA max at 5 V, so a 5.1–5.25 V Pi supply only adds a few
+  µA of leakage.
